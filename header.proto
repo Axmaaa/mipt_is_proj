@@ -1,0 +1,21 @@
+/* 
+ * Generate python module (header_pb2.py):
+ * protoc --python_out=./ header.proto
+ */
+
+syntax = "proto2";
+
+package mipt_is_proj;
+
+message User {
+    optional bool hybrid = 1;
+    optional bytes salt = 2;
+    optional bytes uid = 3;
+    optional bytes enkey = 4;
+}
+
+message Header {
+    optional int32 algorithm = 1;
+    optional int32 users_count = 2;
+    repeated User users = 3; 
+}
