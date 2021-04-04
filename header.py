@@ -70,7 +70,7 @@ class Header:
     def add_user(self, hybrid=False, passwd=None, privkey=None):
         """Adds to the header a user who can decrypt the file.
 
-        :param hybrid: is the encryption hybrid
+        :param hybrid: is the encryption hybrid or not
         :type hybrid: bool
 
         :param salt: password salt (in case of symmetric-key encryption)
@@ -95,8 +95,15 @@ class Header:
             user.enkey = self.__xor_bytes(double_passwd_hash, privkey)
 
 
-    def key(self, passwd=None):
-        """Checks if the password matches one of the users."""
+    def key(self, passwd):
+        """Checks if the password matches one of the users.
+
+        :param passwd: password to check
+        :type passwd: str
+
+        :rtype: bytes|NoneType
+        :return: the key if the user was found, otherwise None
+        """
 
         for user in self.__header.users: # pylint: disable=no-member
             if user.hybrid:
@@ -108,7 +115,7 @@ class Header:
             if double_passwd_hash == user.uid:
                 return self.__xor_bytes(user.uid, user.enkey)
 
-        raise ValueError('Invalid password!')
+        return None
 
 
     def __repr__(self):

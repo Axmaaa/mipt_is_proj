@@ -1,3 +1,5 @@
+"""Function hash_func calculates a hash using given hash algorithm."""
+
 import hashlib
 
 def hash_func(bstr):
