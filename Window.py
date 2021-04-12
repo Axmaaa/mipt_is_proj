@@ -113,9 +113,14 @@ class DBFormWindow(QMainWindow):
         self.list.clear()
         try:
             if mode == "read":
-                with open(file_pathname, 'rb') as f:
-                    string = f.read()
-                    print("Файл " + file_pathname + " открыт на чтение")
+                try:
+                    with open(file_pathname, 'r') as f:
+                        string = f.read()
+                        print("Файл " + file_pathname + " открыт на чтение")
+                except UnicodeDecodeError:
+                    with open(file_pathname, 'rb') as f:
+                        string = f.read()
+                        print("Файл " + file_pathname + " открыт на чтение")
             elif mode == "write":
                 with open(file_pathname, 'w') as f:
                     f.write("")
