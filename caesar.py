@@ -24,6 +24,26 @@ class Caesar():
         return key.to_bytes(self.key_length_bytes, byteorder='big')
 
 
+    @staticmethod
+    def __encrypt_block(data_block, key):
+        """Encrypts data block using caesar algorithm."""
+
+        data_out = bytearray()
+        for byte in data_block:
+            data_out.append((byte + key) % 256)
+        return bytes(data_out)
+
+
+    @staticmethod
+    def __decrypt_block(data_block, key):
+        """Decrypts data block using caesar algorithm."""
+
+        data_out = bytearray()
+        for byte in data_block:
+            data_out.append((byte - key) % 256)
+        return bytes(data_out)
+
+
     def encrypt(self, ifstream, ofstream, key):
         """Encrypts data using caesar algorithm.
 
@@ -37,17 +57,15 @@ class Caesar():
         :type key: bytes
         """
 
-        __key = int.from_bytes(key, byteorder='big')
+        key = int.from_bytes(key, byteorder='big')
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
-            data_out = bytearray()
-            for byte in data_in:
-                data_out.append((byte + __key) % 256)
+            data_out = self.__encrypt_block(data_in, key)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
 
 
-    def decrypt(self, ifstream, ofstream, key):
+    def decrypt(self, ifstream, ofstream, key, data_length=None): # pylint: disable=unused-argument
         """Decrypts data using caesar algorithm.
 
         :param ifstream: binary input stream
@@ -60,11 +78,9 @@ class Caesar():
         :type key: bytes
         """
 
-        __key = int.from_bytes(key, byteorder='big')
+        key = int.from_bytes(key, byteorder='big')
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
-            data_out = bytearray()
-            for byte in data_in:
-                data_out.append((byte - __key) % 256)
+            data_out = self.__decrypt_block(data_in, key)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)

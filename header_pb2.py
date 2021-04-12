@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cheader.proto\x12\x0cmipt_is_proj\"@\n\x04User\x12\x0e\n\x06hybrid\x18\x01 \x01(\x08\x12\x0c\n\x04salt\x18\x02 \x01(\x0c\x12\x0b\n\x03uid\x18\x03 \x01(\x0c\x12\r\n\x05\x65nkey\x18\x04 \x01(\x0c\"S\n\x06Header\x12\x11\n\talgorithm\x18\x01 \x01(\x05\x12\x13\n\x0busers_count\x18\x02 \x01(\x05\x12!\n\x05users\x18\x03 \x03(\x0b\x32\x12.mipt_is_proj.User'
+  serialized_pb=b'\n\x0cheader.proto\x12\x0cmipt_is_proj\"0\n\x04User\x12\x0c\n\x04salt\x18\x01 \x01(\x0c\x12\x0b\n\x03uid\x18\x02 \x01(\x0c\x12\r\n\x05\x65nkey\x18\x03 \x01(\x0c\"S\n\x06Header\x12\x11\n\talgorithm\x18\x01 \x01(\x03\x12\x13\n\x0b\x64\x61ta_length\x18\x02 \x01(\x03\x12!\n\x05users\x18\x03 \x03(\x0b\x32\x12.mipt_is_proj.User'
 )
 
 
@@ -34,29 +34,22 @@ _USER = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='hybrid', full_name='mipt_is_proj.User.hybrid', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='salt', full_name='mipt_is_proj.User.salt', index=0,
+      number=1, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='salt', full_name='mipt_is_proj.User.salt', index=1,
+      name='uid', full_name='mipt_is_proj.User.uid', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='uid', full_name='mipt_is_proj.User.uid', index=2,
+      name='enkey', full_name='mipt_is_proj.User.enkey', index=2,
       number=3, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='enkey', full_name='mipt_is_proj.User.enkey', index=3,
-      number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -74,7 +67,7 @@ _USER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=30,
-  serialized_end=94,
+  serialized_end=78,
 )
 
 
@@ -88,14 +81,14 @@ _HEADER = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='algorithm', full_name='mipt_is_proj.Header.algorithm', index=0,
-      number=1, type=5, cpp_type=1, label=1,
+      number=1, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='users_count', full_name='mipt_is_proj.Header.users_count', index=1,
-      number=2, type=5, cpp_type=1, label=1,
+      name='data_length', full_name='mipt_is_proj.Header.data_length', index=1,
+      number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -119,8 +112,8 @@ _HEADER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=96,
-  serialized_end=179,
+  serialized_start=80,
+  serialized_end=163,
 )
 
 _HEADER.fields_by_name['users'].message_type = _USER

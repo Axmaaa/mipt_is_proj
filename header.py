@@ -32,15 +32,15 @@ class Header:
 
 
     @property
-    def users_count(self):
-        """The number of users who can decrypt the file."""
+    def data_length(self):
+        """The length of the payload."""
 
-        return self.__header.users_count # pylint: disable=no-member
+        return self.__header.data_length # pylint: disable=no-member
 
 
-    @users_count.setter
-    def users_count(self, users_count):
-        self.__header.users_count = users_count
+    @data_length.setter
+    def data_length(self, data_length):
+        self.__header.data_length = data_length
 
 
     def write(self, ofstream):
@@ -67,14 +67,8 @@ class Header:
         return bytes([_a ^ _b for _a, _b in zip(bstr1, bstr2)])
 
 
-    def add_user(self, hybrid=False, passwd=None, privkey=None):
+    def add_user(self, privkey, passwd=None):
         """Adds to the header a user who can decrypt the file.
-
-        :param hybrid: is the encryption hybrid or not
-        :type hybrid: bool
-
-        :param salt: password salt (in case of symmetric-key encryption)
-        :type: bytes
 
         :param passwd: password (in case of symmetric-key encryption)
         :type: str
@@ -84,8 +78,7 @@ class Header:
         """
 
         user = self.__header.users.add() # pylint: disable=no-member
-        user.hybrid = hybrid
-        if not hybrid:
+        if passwd is not None:
             salt = random.getrandbits(SALT_LEN_BITS).to_bytes(SALT_LEN_BYTES, byteorder='big')
             user.salt = salt
             salty_passwd = bytes(passwd, encoding='ascii') + salt
@@ -95,7 +88,7 @@ class Header:
             user.enkey = self.__xor_bytes(double_passwd_hash, privkey)
 
 
-    def key(self, passwd):
+    def key(self, passwd=None):
         """Checks if the password matches one of the users.
 
         :param passwd: password to check
@@ -106,14 +99,12 @@ class Header:
         """
 
         for user in self.__header.users: # pylint: disable=no-member
-            if user.hybrid:
-                continue
-
-            salty_passwd = bytes(passwd, encoding='ascii') + user.salt
-            passwd_hash = hash_func.hash_func(salty_passwd)
-            double_passwd_hash = hash_func.hash_func(passwd_hash)
-            if double_passwd_hash == user.uid:
-                return self.__xor_bytes(user.uid, user.enkey)
+            if passwd is not None:
+                salty_passwd = bytes(passwd, encoding='ascii') + user.salt
+                passwd_hash = hash_func.hash_func(salty_passwd)
+                double_passwd_hash = hash_func.hash_func(passwd_hash)
+                if double_passwd_hash == user.uid:
+                    return self.__xor_bytes(user.uid, user.enkey)
 
         return None
 

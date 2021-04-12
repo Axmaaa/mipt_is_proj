@@ -1,9 +1,19 @@
 """Gets a cipher from an algorithm."""
 
-from algenum import AlgEnum
+import enum
+
+
+class AlgEnum(enum.Enum):
+    """The enum contains the codes of the algorithms."""
+
+    CAESAR = enum.auto()
+    VIGENERE = enum.auto()
+    AES = enum.auto()
+
 
 from caesar import Caesar
 from vigenere import Vigenere
+from aes import AES
 
 
 def cipher(algorithm):
@@ -26,8 +36,8 @@ def cipher(algorithm):
 
     if algorithm == AlgEnum.CAESAR.name:
         return Caesar()
-
     elif algorithm == AlgEnum.VIGENERE.name:
         return Vigenere()
-
+    elif algorithm == AlgEnum.AES.name:
+        return AES()
     return None
