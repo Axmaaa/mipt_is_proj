@@ -12,6 +12,9 @@ class DecryptDialog(QDialog):
 
         self.state = 0
 
+        self.__init_ui()
+
+    def __init_ui(self):
         self.setFixedSize(QSize(270, 120))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
@@ -43,7 +46,6 @@ class DecryptDialog(QDialog):
             self.showMessageBox("Ошибка", "Пароль не был ввыден", "error")
             self.pswd_line.setFocus()
             return
-        print(self.pswd_line.text())
         self.state = 1
         self.close()
 

@@ -12,6 +12,9 @@ class EncryptDialog(QDialog):
 
         self.state = 0
 
+        self.__init_ui()
+
+    def __init_ui(self):
         self.setFixedSize(QSize(300, 170))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
@@ -56,15 +59,15 @@ class EncryptDialog(QDialog):
     def __get_algorithm(self):
         self.algorithm.insertItem(0, "--Выберите алгоритм--")
         self.algorithm.insertItem(1, "Цезарь")
-        self.algorithm.insertItem(2, "Вигнер")
+        self.algorithm.insertItem(2, "Виженер")
+        self.algorithm.insertItem(2, "AES")
+
 
     def __encrypt(self):
-        print(self.multy_pass.checkState())
         if self.pswd_line.text() == "":
             self.showMessageBox("Ошибка", "Пароль не был ввыден", "error")
             self.pswd_line.setFocus()
             return
-        print(self.pswd_line.text())
         if self.algorithm.currentIndex() == 0:
             self.showMessageBox("Ошибка", "Алгоритм не был выбран", "error")
             self.pswd_line.setFocus()
