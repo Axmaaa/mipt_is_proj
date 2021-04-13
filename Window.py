@@ -115,11 +115,15 @@ class DBFormWindow(QMainWindow):
             if mode == "read":
                 try:
                     with open(file_pathname, 'r') as f:
-                        string = f.read()
+                        string = f.read(10000)
+                        if f.tell() > 10000:
+                            string = string + "\n---Было выведено 10000 символов---"
                         print("Файл " + file_pathname + " открыт на чтение")
                 except UnicodeDecodeError:
                     with open(file_pathname, 'rb') as f:
-                        string = f.read()
+                        string = f.read(10000)
+                        if f.tell() > 10000:
+                            string = string + "\n---Было выведено 10000 символов---\n".encode("UTF-8")
                         print("Файл " + file_pathname + " открыт на чтение")
             elif mode == "write":
                 with open(file_pathname, 'w') as f:
