@@ -51,7 +51,7 @@ def decrypt_file(input_file, output_file, password):
 
         key = hdr.key(password)
         if key is None:
-            raise ValueError
+            raise ValueError('Invalid password')
         else:
             with open(output_file, 'wb') as ofstream:
                 cipher.decrypt(ifstream, ofstream, key, data_length)

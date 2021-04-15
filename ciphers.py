@@ -9,11 +9,15 @@ class AlgEnum(enum.Enum):
     CAESAR = enum.auto()
     VIGENERE = enum.auto()
     AES = enum.auto()
+    DES = enum.auto()
+    MAGMA = enum.auto()
 
 
-from caesar import Caesar
-from vigenere import Vigenere
-from aes import AES
+from caesar import Caesar       # pylint: disable=wrong-import-position
+from vigenere import Vigenere   # pylint: disable=wrong-import-position
+from aes import AES             # pylint: disable=wrong-import-position
+from des import DES             # pylint: disable=wrong-import-position
+from magma import Magma         # pylint: disable=wrong-import-position
 
 
 def cipher(algorithm):
@@ -36,8 +40,12 @@ def cipher(algorithm):
 
     if algorithm == AlgEnum.CAESAR.name:
         return Caesar()
-    elif algorithm == AlgEnum.VIGENERE.name:
+    if algorithm == AlgEnum.VIGENERE.name:
         return Vigenere()
-    elif algorithm == AlgEnum.AES.name:
+    if algorithm == AlgEnum.AES.name:
         return AES()
+    if algorithm == AlgEnum.DES.name:
+        return DES()
+    if algorithm == AlgEnum.MAGMA.name:
+        return Magma()
     return None

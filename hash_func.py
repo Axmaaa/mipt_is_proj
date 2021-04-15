@@ -2,9 +2,9 @@
 
 import hashlib
 
-def hash_func(bstr):
+def hash_func(data):
     """Calculates a hash."""
 
-    __hash = hashlib.sha256()
-    __hash.update(bstr)
+    __hash = hashlib.sha512()
+    __hash.update(data)
     return __hash.digest()

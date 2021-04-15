@@ -1,23 +1,23 @@
-"""AES ecnryption algorithm."""
+"""DES ecnryption algorithm."""
 
 import secrets
-import Crypto.Cipher.AES as _AES
+import Crypto.Cipher.DES as _DES
 
 from ciphers import AlgEnum
 
 
-class AES():
-    """Class contains AES algorithm."""
+class DES():
+    """Class contains DES algorithm."""
 
     def __init__(self):
         # Number of the algorithm
-        self.algorithm_number = AlgEnum.AES.value
+        self.algorithm_number = AlgEnum.DES.value
         # Size of nonce in bytes
         self.nonce_size = 16
         # Size of key in bytes
-        self.key_size = 32
+        self.key_size = _DES.key_size
         # Size of the data block read to encrypt
-        self.data_block_size = _AES.block_size
+        self.data_block_size = _DES.block_size
 
     def keygen(self):
         """Generates a random key."""
@@ -43,7 +43,7 @@ class AES():
 
 
     def encrypt(self, ifstream, ofstream, key):
-        """Encrypts data using AES algorithm in EAX mode.
+        """Encrypts data using DES algorithm in EAX mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -56,19 +56,19 @@ class AES():
         """
 
         nonce = key[self.key_size:]
-        aes = _AES.new(key[:self.key_size], _AES.MODE_EAX, nonce=nonce)
+        des = _DES.new(key[:self.key_size], _DES.MODE_EAX, nonce=nonce)
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             if len(data_in) < self.data_block_size:
                 data_in = self.pad(data_in)
-            data_out = aes.encrypt(data_in)
+            data_out = des.encrypt(data_in)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
 
 
     def decrypt(self, ifstream, ofstream, key, data_size):
-        """Decrypts data using AES algorithm in EAX mode.
+        """Decrypts data using DES algorithm in EAX mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -84,13 +84,13 @@ class AES():
         """
 
         nonce = key[self.key_size:]
-        aes = _AES.new(key[:self.key_size], _AES.MODE_EAX, nonce=nonce)
+        des = _DES.new(key[:self.key_size], _DES.MODE_EAX, nonce=nonce)
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             if data_size < self.data_block_size:
                 data_in = self.unpad(data_in, data_size)
-            data_out = aes.decrypt(data_in)
+            data_out = des.decrypt(data_in)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
             data_size -= len(data_in)

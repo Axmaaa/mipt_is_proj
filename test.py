@@ -14,7 +14,7 @@ plain_file = 'file.in'
 enc_file = 'file.enc'
 dec_file = 'file.dec'
 
-api.encrypt_file(plain_file, enc_file, 'aes', passwds)
+api.encrypt_file(plain_file, enc_file, 'magma', passwds)
 print('File was encrypted')
 
 passwd = input('Input password: ')
