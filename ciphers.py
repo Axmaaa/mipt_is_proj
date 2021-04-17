@@ -1,23 +1,13 @@
 """Gets a cipher from an algorithm."""
 
-import enum
+import utils
 
-
-class AlgEnum(enum.Enum):
-    """The enum contains the codes of the algorithms."""
-
-    CAESAR = enum.auto()
-    VIGENERE = enum.auto()
-    AES = enum.auto()
-    DES = enum.auto()
-    MAGMA = enum.auto()
-
-
-from caesar import Caesar       # pylint: disable=wrong-import-position
-from vigenere import Vigenere   # pylint: disable=wrong-import-position
-from aes import AES             # pylint: disable=wrong-import-position
-from des import DES             # pylint: disable=wrong-import-position
-from magma import Magma         # pylint: disable=wrong-import-position
+from caesar import Caesar
+from vigenere import Vigenere
+from aes import AES
+from des import DES
+from magma import Magma
+from kuznechik import Kuznechik
 
 
 def cipher(algorithm):
@@ -32,20 +22,26 @@ def cipher(algorithm):
     if isinstance(algorithm, str):
         algorithm = algorithm.upper()
     elif isinstance(algorithm, int):
-        for alg in AlgEnum:
+        for alg in utils.AlgEnum:
             if alg.value == algorithm:
                 algorithm = alg.name
     else:
         raise TypeError
 
-    if algorithm == AlgEnum.CAESAR.name:
-        return Caesar()
-    if algorithm == AlgEnum.VIGENERE.name:
-        return Vigenere()
-    if algorithm == AlgEnum.AES.name:
-        return AES()
-    if algorithm == AlgEnum.DES.name:
-        return DES()
-    if algorithm == AlgEnum.MAGMA.name:
-        return Magma()
+    __cipher = None
+    if algorithm == utils.AlgEnum.CAESAR.name:
+        __cipher = Caesar()
+    if algorithm == utils.AlgEnum.VIGENERE.name:
+        __cipher = Vigenere()
+    if algorithm == utils.AlgEnum.AES.name:
+        __cipher = AES()
+    if algorithm == utils.AlgEnum.DES.name:
+        __cipher = DES()
+    if algorithm == utils.AlgEnum.MAGMA.name:
+        __cipher = Magma()
+    if algorithm == utils.AlgEnum.KUZNECHIK.name:
+        __cipher = Kuznechik()
+
+    if __cipher is not None:
+        return __cipher
     return None

@@ -1,7 +1,8 @@
 """Caesar ecnryption algorithm."""
 
-import random
-from ciphers import AlgEnum
+import secrets
+
+import utils
 
 
 class Caesar():
@@ -9,19 +10,16 @@ class Caesar():
 
     def __init__(self):
         # Number of the algorithm
-        self.algorithm_number = AlgEnum.CAESAR.value
+        self.algorithm_number = utils.AlgEnum.CAESAR.value
         # Size of key in bytes
-        self.key_length_bytes = 1
-        # Size of key in bits
-        self.key_length_bits = self.key_length_bytes * 8
+        self.key_size = 1
         # Size of the data block read to encrypt
         self.data_block_size = 1024
 
     def keygen(self):
         """Generates a random key."""
 
-        key = random.getrandbits(self.key_length_bits)
-        return key.to_bytes(self.key_length_bytes, byteorder='big')
+        return secrets.token_bytes(self.key_size)
 
 
     @staticmethod
@@ -54,10 +52,10 @@ class Caesar():
         :type ofstream: BufferedWriter
 
         :param key: key for the algorithm
-        :type key: bytes
+        :type key: bytes, length = 1
         """
 
-        key = int.from_bytes(key, byteorder='big')
+        key = ord(key)
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             data_out = self.__encrypt_block(data_in, key)
@@ -65,7 +63,7 @@ class Caesar():
             data_in = ifstream.read(self.data_block_size)
 
 
-    def decrypt(self, ifstream, ofstream, key, data_length=None): # pylint: disable=unused-argument
+    def decrypt(self, ifstream, ofstream, key, data_size=None): # pylint: disable=unused-argument
         """Decrypts data using caesar algorithm.
 
         :param ifstream: binary input stream
@@ -75,10 +73,10 @@ class Caesar():
         :type ofstream: BufferedWriter
 
         :param key: key for the algorithm
-        :type key: bytes
+        :type key: bytes, length = 1
         """
 
-        key = int.from_bytes(key, byteorder='big')
+        key = ord(key)
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             data_out = self.__decrypt_block(data_in, key)

@@ -1,7 +1,8 @@
 """Vigenere ecnryption algorithm."""
 
-import random
-from ciphers import AlgEnum
+import secrets
+
+import utils
 
 
 class Vigenere():
@@ -9,19 +10,16 @@ class Vigenere():
 
     def __init__(self):
         # Number of the algorithm
-        self.algorithm_number = AlgEnum.VIGENERE.value
+        self.algorithm_number = utils.AlgEnum.VIGENERE.value
         # Size of key in bytes
-        self.key_length_bytes = 10
-        # Size of key in bits
-        self.key_length_bits = self.key_length_bytes * 8
+        self.key_size = 10
         # Size of the data block read to encrypt
-        self.data_block_size = self.key_length_bytes
+        self.data_block_size = self.key_size
 
     def keygen(self):
         """Generates a random key."""
 
-        key = random.getrandbits(self.key_length_bits)
-        return key.to_bytes(self.key_length_bytes, byteorder='big')
+        return secrets.token_bytes(self.key_size)
 
 
     @staticmethod
@@ -64,7 +62,7 @@ class Vigenere():
             data_in = ifstream.read(self.data_block_size)
 
 
-    def decrypt(self, ifstream, ofstream, key, data_length=None): # pylint: disable=unused-argument
+    def decrypt(self, ifstream, ofstream, key, data_size=None): # pylint: disable=unused-argument
         """Decrypts data using vigenere algorithm.
 
         :param ifstream: binary input stream

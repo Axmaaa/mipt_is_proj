@@ -1,16 +1,15 @@
 """Module for working with header of encrypted file."""
 
-import random
+import secrets
 
 import header_pb2
 import hash_func
+from utils import xor_bytes
 
 # Length of the size of header in bytes
 HEADER_SIZE_LEN = 8
 # Size of the salt in bytes
 SALT_LEN_BYTES = 16
-# Size of the salt in bits
-SALT_LEN_BITS = SALT_LEN_BYTES * 8
 
 class Header:
     """Class for storing information from the encrypted file header."""
@@ -60,13 +59,6 @@ class Header:
         self.__header.ParseFromString(header_bin)
 
 
-    @staticmethod
-    def __xor_bytes(bstr1, bstr2):
-        """Returns xor of two byte strings."""
-
-        return bytes([_a ^ _b for _a, _b in zip(bstr1, bstr2)])
-
-
     def add_user(self, privkey, passwd=None):
         """Adds to the header a user who can decrypt the file.
 
@@ -79,13 +71,15 @@ class Header:
 
         user = self.__header.users.add() # pylint: disable=no-member
         if passwd is not None:
-            salt = random.getrandbits(SALT_LEN_BITS).to_bytes(SALT_LEN_BYTES, byteorder='big')
+            salt = secrets.token_bytes(SALT_LEN_BYTES)
             user.salt = salt
             salty_passwd = bytes(passwd, encoding='ascii') + salt
             passwd_hash = hash_func.hash_func(salty_passwd)
             double_passwd_hash = hash_func.hash_func(passwd_hash)
             user.uid = double_passwd_hash
-            user.enkey = self.__xor_bytes(double_passwd_hash, privkey)
+            if len(double_passwd_hash) < len(privkey):
+                raise ValueError('Too little hash')
+            user.enkey = xor_bytes(double_passwd_hash, privkey)
 
 
     def key(self, passwd=None):
@@ -104,7 +98,7 @@ class Header:
                 passwd_hash = hash_func.hash_func(salty_passwd)
                 double_passwd_hash = hash_func.hash_func(passwd_hash)
                 if double_passwd_hash == user.uid:
-                    return self.__xor_bytes(user.uid, user.enkey)
+                    return xor_bytes(user.uid, user.enkey)
 
         return None
 

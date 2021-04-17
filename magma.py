@@ -1,9 +1,10 @@
 """GOST 28147-89 (aka Magma) ecnryption algorithm."""
 
 import secrets
-import pygost.gost28147 as magma
+from Crypto.Util.strxor import strxor
+import pygost.gost3412 as gost3412
 
-from ciphers import AlgEnum
+import utils
 
 
 class Magma():
@@ -11,13 +12,13 @@ class Magma():
 
     def __init__(self):
         # Number of the algorithm
-        self.algorithm_number = AlgEnum.MAGMA.value
-        # Size of initialization vector
-        self.iv_size = magma.BLOCKSIZE
+        self.algorithm_number = utils.AlgEnum.MAGMA.value
+        # Size of initialization vector in bytes
+        self.iv_size = gost3412.GOST3412Magma.blocksize
         # Size of key in bytes
-        self.key_size = magma.KEYSIZE
+        self.key_size = gost3412.KEYSIZE
         # Size of the data block read to encrypt
-        self.data_block_size = magma.BLOCKSIZE
+        self.data_block_size = gost3412.GOST3412Magma.blocksize
 
     def keygen(self):
         """Generates a random key."""
@@ -25,25 +26,8 @@ class Magma():
         return secrets.token_bytes(self.key_size + self.iv_size)
 
 
-    def pad(self, data):
-        """Pads data with random bytes."""
-
-        if len(data) < self.data_block_size:
-            padding_size = self.data_block_size - len(data)
-            padding = secrets.token_bytes(padding_size)
-        return data + padding
-
-
-    def unpad(self, data, size):
-        """Unpads data."""
-
-        if len(data) != self.data_block_size:
-            raise ValueError('Invalid data length')
-        return data[:size]
-
-
     def encrypt(self, ifstream, ofstream, key):
-        """Encrypts data using Magma algorithm in CFB mode.
+        """Encrypts data using Magma algorithm in CBC mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -55,19 +39,24 @@ class Magma():
         :type key: bytes
         """
 
+        magma = gost3412.GOST3412Magma(key[:self.key_size])
+
         init_vector = key[self.key_size:]
+        tmp_data = init_vector
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             if len(data_in) < self.data_block_size:
-                data_in = self.pad(data_in)
-            data_out = magma.cfb_encrypt(key[:self.key_size], data_in, iv=init_vector)
+                data_in = utils.pad(data_in, self.data_block_size)
+            data_in = strxor(data_in, tmp_data)
+            data_out = magma.encrypt(data_in)
+            tmp_data = data_out
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
 
 
     def decrypt(self, ifstream, ofstream, key, data_size):
-        """Decrypts data using Magma algorithm in CFB mode.
+        """Decrypts data using Magma algorithm in CBC mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -82,13 +71,18 @@ class Magma():
         :type data_size: int
         """
 
+        magma = gost3412.GOST3412Magma(key[:self.key_size])
+
         init_vector = key[self.key_size:]
+        tmp_data = init_vector
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
+            data_out = magma.decrypt(data_in)
+            data_out = strxor(data_out, tmp_data)
+            tmp_data = data_in
             if data_size < self.data_block_size:
-                data_in = self.unpad(data_in, data_size)
-            data_out = magma.cfb_decrypt(key[:self.key_size], data_in, iv=init_vector)
+                data_out = utils.unpad(data_out, data_size)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
             data_size -= len(data_in)

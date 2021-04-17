@@ -3,7 +3,7 @@
 import secrets
 import Crypto.Cipher.AES as _AES
 
-from ciphers import AlgEnum
+import utils
 
 
 class AES():
@@ -11,39 +11,24 @@ class AES():
 
     def __init__(self):
         # Number of the algorithm
-        self.algorithm_number = AlgEnum.AES.value
-        # Size of nonce in bytes
-        self.nonce_size = 16
+        self.algorithm_number = utils.AlgEnum.AES.value
+        # Mode of the algorithm
+        self.mode = _AES.MODE_CBC
+        # Size of initializaton vector in bytes
+        self.iv_size = 16
         # Size of key in bytes
-        self.key_size = 32
+        self.key_size = _AES.key_size[2]
         # Size of the data block read to encrypt
         self.data_block_size = _AES.block_size
 
     def keygen(self):
         """Generates a random key."""
 
-        return secrets.token_bytes(self.key_size + self.nonce_size)
-
-
-    def pad(self, data):
-        """Pads data with random bytes."""
-
-        if len(data) < self.data_block_size:
-            padding_size = self.data_block_size - len(data)
-            padding = secrets.token_bytes(padding_size)
-        return data + padding
-
-
-    def unpad(self, data, size):
-        """Unpads data."""
-
-        if len(data) != self.data_block_size:
-            raise ValueError('Invalid data length')
-        return data[:size]
+        return secrets.token_bytes(self.key_size + self.iv_size)
 
 
     def encrypt(self, ifstream, ofstream, key):
-        """Encrypts data using AES algorithm in EAX mode.
+        """Encrypts data using AES algorithm in CBC mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -51,24 +36,24 @@ class AES():
         :param ofstream: binary output stream
         :type ofstream: BufferedWriter
 
-        :param key: concatenation of key and nonce for the algorithm
+        :param key: concatenation of key and initializaton vector for the algorithm
         :type key: bytes
         """
 
-        nonce = key[self.key_size:]
-        aes = _AES.new(key[:self.key_size], _AES.MODE_EAX, nonce=nonce)
+        init_vector = key[self.key_size:]
+        aes = _AES.new(key[:self.key_size], self.mode, iv=init_vector)
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
             if len(data_in) < self.data_block_size:
-                data_in = self.pad(data_in)
+                data_in = utils.pad(data_in, self.data_block_size)
             data_out = aes.encrypt(data_in)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
 
 
     def decrypt(self, ifstream, ofstream, key, data_size):
-        """Decrypts data using AES algorithm in EAX mode.
+        """Decrypts data using AES algorithm in CBC mode.
 
         :param ifstream: binary input stream
         :type ifstream: BufferedReader
@@ -76,21 +61,21 @@ class AES():
         :param ofstream: binary output stream
         :type ofstream: BufferedWriter
 
-        :param key: concatenation of key and nonce for the algorithm
+        :param key: concatenation of key and initializaton vector for the algorithm
         :type key: bytes
 
         :param data_size: size of the payload
         :type data_size: int
         """
 
-        nonce = key[self.key_size:]
-        aes = _AES.new(key[:self.key_size], _AES.MODE_EAX, nonce=nonce)
+        init_vector = key[self.key_size:]
+        aes = _AES.new(key[:self.key_size], self.mode, iv=init_vector)
 
         data_in = ifstream.read(self.data_block_size)
         while data_in != b'':
-            if data_size < self.data_block_size:
-                data_in = self.unpad(data_in, data_size)
             data_out = aes.decrypt(data_in)
+            if data_size < self.data_block_size:
+                data_out = utils.unpad(data_out, data_size)
             ofstream.write(data_out)
             data_in = ifstream.read(self.data_block_size)
             data_size -= len(data_in)
