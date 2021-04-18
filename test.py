@@ -61,11 +61,12 @@ def test(algorithm):
 def main():
     """Main."""
 
-    algorithms = ['caesar', 'vigenere', 'aes', 'des', 'magma', 'kuznechik']
+    algorithms = ['Caesar', 'Vigenere', 'AES', 'DES', 'Magma', 'Kuznechik']
     for alg in algorithms:
+        print('Testing {} algorithm...'.format(alg))
         if not test(alg):
-            print('\033[31m{} has not passed the test\033[0m'.format(alg))
+            print('\033[31m{} algorithm has not passed the test\033[0m'.format(alg))
         else:
-            print('\033[32m{} has passed the test\033[0m'.format(alg))
+            print('\033[32m{} algorithm has successfully passed the test\033[0m'.format(alg))
 
 main()
