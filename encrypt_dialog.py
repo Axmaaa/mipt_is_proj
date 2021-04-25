@@ -177,7 +177,7 @@ class EncryptDialog(QDialog):
         self.algorithm.insertItem(1, "Цезарь")
         self.algorithm.insertItem(2, "Виженер")
         self.algorithm.insertItem(3, "AES")
-        self.algorithm.insertItem(4, "Des")
+        self.algorithm.insertItem(4, "DES")
         self.algorithm.insertItem(5, "Magma")
         self.algorithm.insertItem(6, "Кузнечик")
 
