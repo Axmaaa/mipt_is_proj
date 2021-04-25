@@ -207,20 +207,12 @@ class DBFormWindow(QMainWindow):
         if dial.state == 0:
             return 1
 
-        password = dial.pswd_line.text()
+        passwords = dial.data
         algorithm = self.__translate_algorithm(dial.algorithm.currentText())
-        multy_pass = dial.multy_pass.checkState()
 
         if res == 0:
-            print("Password from dialog ", password)
+            print("Passwords from dialog ", passwords)
             print("Algorithm from dialog ", algorithm)
-            print("Mode for passwords from dialog ", multy_pass)
-
-        new_password = list()
-        if multy_pass == 2:
-            new_password = password.split(', ')
-        else:
-            new_password.append(password)
 
         if self.file_save_name in ('', 'Выберите конечный файл или сгенерируйте его в процессе работы', None):
             res = self.change_result_file("encrypt")
@@ -239,12 +231,12 @@ class DBFormWindow(QMainWindow):
 
         try:
             print("parametrs to decrypt_file: path_to_open = " + self.path_to_open + " | path_to_save = "
-                  + self.path_to_save + " |  password(s) = " + str(new_password) + " | algorithm = " + algorithm)
-            encrypt_file(self.path_to_open, self.path_to_save, algorithm, new_password)
+                  + self.path_to_save + " |  password(s) = " + str(passwords) + " | algorithm = " + algorithm)
+            encrypt_file(self.path_to_open, self.path_to_save, algorithm, passwords)
         except Exception as er:
             self.showMessageBox("Ошибка", "Произошла ошибка (" + str(er) + ") при шифровании файла! Ищите виноватых!",
                                 'error')
-            print("Ошибка при шифровании: " + er)
+            print("Ошибка при шифровании: " + str(er))
             return 1
         print("---Конец шифрования---")
         self.__open_file(self.path_to_save, "read")
@@ -283,6 +275,12 @@ class DBFormWindow(QMainWindow):
             return "vigenere"
         elif algorithm == "AES":
             return "aes"
+        elif algorithm == "DES":
+            return "des"
+        elif algorithm == "Magma":
+            return "magma"
+        elif algorithm == "Кузнечик":
+            return "kuznechik"
 
     @staticmethod
     def showMessageBox(title, message, case):
