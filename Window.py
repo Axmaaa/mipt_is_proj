@@ -1,9 +1,10 @@
-from PyQt5.Qt import *
-from PyQt5 import QtCore, QtWidgets
-import sys
-from functools import partial
 import datetime
 import os
+import sys
+from functools import partial
+from PyQt5.Qt import *
+from PyQt5 import QtCore, QtWidgets
+
 
 from decrypt_dialog import DecryptDialog
 from encrypt_dialog import EncryptDialog
@@ -117,13 +118,13 @@ class DBFormWindow(QMainWindow):
                     with open(file_pathname, 'r') as f:
                         string = f.read(10000)
                         if f.tell() > 10000:
-                            string = string + "\n---Было выведено 10000 символов---"
+                            string = string + "\n--Было выведено 10000 символов--"
                         print("Файл " + file_pathname + " открыт на чтение")
                 except UnicodeDecodeError:
                     with open(file_pathname, 'rb') as f:
                         string = f.read(10000)
                         if f.tell() > 10000:
-                            string = string + "\n---Было выведено 10000 символов---\n".encode("UTF-8")
+                            string = string + "\n--Было выведено 10000 символов--\n".encode("UTF-8")
                         print("Файл " + file_pathname + " открыт на чтение")
             elif mode == "write":
                 with open(file_pathname, 'w') as f:
@@ -134,9 +135,11 @@ class DBFormWindow(QMainWindow):
                 self.showMessageBox("Ошибка", "Неизвестный способ открытия файла", "error")
                 return 1
         except Exception as e:
-            self.showMessageBox("Ошибка", "Произошла ошибка (" + str(e) + ") при открытии файла", "error")
+            self.showMessageBox("Ошибка",
+                                "Произошла ошибка (" + str(e) + ") при открытии файла", "error")
             print("return from __open_file: " + str(e))
-            print("parametrs in __open_file: file_pathname = " + file_pathname + " | mode = " + mode)
+            print("parametrs in __open_file: "
+                  "file_pathname = " + file_pathname + " | mode = " + mode)
             return 1
         print('---Конец открытия файла---')
         if string != "":
@@ -165,13 +168,15 @@ class DBFormWindow(QMainWindow):
         if res == 0:
             print("Password from dialog ", password)
 
-        if self.file_save_name in ('', 'Выберите конечный файл или сгенерируйте его в процессе работы', None):
+        if self.file_save_name in ('', 'Выберите конечный файл '
+                                       'или сгенерируйте его в процессе работы', None):
             res = self.change_result_file("decrypt")
             if res == 1:
                 return 1
         else:
             dil_result = self.showDilemaBox("Сохранить в ...",
-                                            "Вы уверены, что хотите сохранить результат шифрования в файле "
+                                            "Вы уверены, что хотите сохранить "
+                                            "результат шифрования в файле "
                                             "" + str(self.file_save_name))
             if dil_result == 0:
                 res = self.change_result_file("encrypt")
@@ -180,11 +185,13 @@ class DBFormWindow(QMainWindow):
                     return 1
 
         try:
-            print("parametrs to decrypt_file: path_to_open = " + self.path_to_open + " | path_to_save = "
+            print("parametrs to decrypt_file: "
+                  "path_to_open = " + self.path_to_open + " | path_to_save = "
                   + self.path_to_save + " | password = " + password)
             decrypt_file(self.path_to_open, self.path_to_save, password)
         except Exception as er:
-            self.showMessageBox("Ошибка", "Произошла ошибка (" + str(er) + ") при дешировке файла! Ищите виноватых!",
+            self.showMessageBox("Ошибка", "Произошла ошибка "
+                                "(" + str(er) + ") при дешировке файла! Ищите виноватых!",
                                 'error')
             print(er)
             return
@@ -214,14 +221,16 @@ class DBFormWindow(QMainWindow):
             print("Passwords from dialog ", passwords)
             print("Algorithm from dialog ", algorithm)
 
-        if self.file_save_name in ('', 'Выберите конечный файл или сгенерируйте его в процессе работы', None):
+        if self.file_save_name in ('', 'Выберите конечный файл '
+                                   'или сгенерируйте его в процессе работы', None):
             res = self.change_result_file("encrypt")
             print("Res = " + str(res))
             if res == 1:
                 return 1
         else:
             dil_result = self.showDilemaBox("Сохранить в ...",
-                                            "Вы уверены, что хотите сохранить результат шифрования в файле "
+                                            "Вы уверены, что хотите сохранить "
+                                            "результат шифрования в файле "
                                             "" + str(self.file_save_name))
             if dil_result == 0:
                 res = self.change_result_file("encrypt")
@@ -230,11 +239,14 @@ class DBFormWindow(QMainWindow):
                     return 1
 
         try:
-            print("parametrs to decrypt_file: path_to_open = " + self.path_to_open + " | path_to_save = "
-                  + self.path_to_save + " |  password(s) = " + str(passwords) + " | algorithm = " + algorithm)
+            print("parametrs to decrypt_file: "
+                  "path_to_open = " + self.path_to_open + " | path_to_save = "
+                  + self.path_to_save + " |  "
+                  "password(s) = " + str(passwords) + " | algorithm = " + algorithm)
             encrypt_file(self.path_to_open, self.path_to_save, algorithm, passwords)
         except Exception as er:
-            self.showMessageBox("Ошибка", "Произошла ошибка (" + str(er) + ") при шифровании файла! Ищите виноватых!",
+            self.showMessageBox("Ошибка", "Произошла ошибка (" + str(er) + ") "
+                                "при шифровании файла! Ищите виноватых!",
                                 'error')
             print("Ошибка при шифровании: " + str(er))
             return 1
@@ -246,12 +258,14 @@ class DBFormWindow(QMainWindow):
 
         result = self.showDilemaBox("Внимание!", "Записать результат в новый файл?")
         if result == 1:
+            time = str(datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S"))
             if mode == "encrypt":
-                filename = "encrypted_file_" + str(datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")) + ".txt"
+                filename = "encrypted_file_" + time + ".txt"
             elif mode == "decrypt":
-                filename = "decrypted_file_" + str(datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")) + ".txt"
+                filename = "decrypted_file_" + time + ".txt"
             else:
-                self.showMessageBox("Ошибка", "Неизвестный способ формирования названия файла", "error")
+                self.showMessageBox("Ошибка", "Неизвестный способ "
+                                    "формирования названия файла", "error")
                 return 1
             file_pathname = (str(os.path.abspath(os.curdir)) + "/" + filename)
             print(file_pathname)
