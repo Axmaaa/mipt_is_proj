@@ -10,13 +10,13 @@ class EncryptDialog(QDialog):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.state = 2
-        self.previous_pswd_amount = 0
-        self.current_pswd_amount = 1
+        self.previous_password_amount = 0
+        self.current_password_amount = 1
         self.data = list()
         self.__init_ui()
 
     def __init_ui(self):
-        self.setMinimumSize(QSize(400, 300))  # Устанавливаем размеры
+        self.setMinimumSize(QSize(400, 330))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
         self.setWindowTitle("Шифрование")
@@ -24,6 +24,7 @@ class EncryptDialog(QDialog):
         self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общее
         self.boxHorizontal_pas_amount = QtWidgets.QHBoxLayout()  # Для количества паролей
         self.boxGrid = QtWidgets.QGridLayout()  # Для паролей
+        self.boxHorizontal_input = QtWidgets.QHBoxLayout()
 
         self.algorithm = QComboBox(self)  # Названия алгоритмов
         self.algorithm.setEditable(True)
@@ -32,40 +33,67 @@ class EncryptDialog(QDialog):
         self.boxVertical_main.addWidget(self.algorithm)
         self.__get_algorithm()
 
-        self.pswds = QLabel("Количество паролей:", self)
-        minus_box = QPushButton("-", self)
-        self.pswd_amount = QLabel(str(self.current_pswd_amount), self)
-        self.pswd_amount.setAlignment(Qt.AlignCenter)
-        plus_box = QPushButton("+", self)
+        self.passwords = QLabel("Количество паролей:", self)
+        self.minus_box = QPushButton("-", self)
+        self.password_amount = QLabel(str(self.current_password_amount), self)
+        self.password_amount.setAlignment(Qt.AlignCenter)
+        self.plus_box = QPushButton("+", self)
 
-        self.boxHorizontal_pas_amount.addWidget(self.pswds)
-        self.boxHorizontal_pas_amount.addWidget(minus_box)
-        self.boxHorizontal_pas_amount.addWidget(self.pswd_amount)
-        self.boxHorizontal_pas_amount.addWidget(plus_box)
+        self.boxHorizontal_pas_amount.addWidget(self.passwords)
+        self.boxHorizontal_pas_amount.addWidget(self.minus_box)
+        self.boxHorizontal_pas_amount.addWidget(self.password_amount)
+        self.boxHorizontal_pas_amount.addWidget(self.plus_box)
 
-        minus_box.clicked.connect(self.__minus)
-        plus_box.clicked.connect(self.__plus)
+        self.minus_box.clicked.connect(self.__minus)
+        self.plus_box.clicked.connect(self.__plus)
 
-        self.__change_pswd_line()
+        self.__change_password_line()
 
         self.boxVertical_main.addLayout(self.boxHorizontal_pas_amount)
         self.boxVertical_main.addLayout(self.boxGrid)
+        self.boxVertical_main.addLayout(self.boxHorizontal_input)
         self.setLayout(self.boxVertical_main)
 
         self.multy_pass = QCheckBox("Показать пароль(и)", self)
         self.multy_pass.stateChanged.connect(self.__change_mod)
         self.boxVertical_main.addWidget(self.multy_pass)
 
-        passwords_from_txt_button = QPushButton("Извлечь пароли из файла", self)
-        self.boxVertical_main.addWidget(passwords_from_txt_button)
-        passwords_from_txt_button.clicked.connect(self.open_file)
+        self.passwords_by_hands_button = QPushButton("Ввести пароли вручную", self)
+        self.boxHorizontal_input.addWidget(self.passwords_by_hands_button)
+        self.passwords_by_hands_button.clicked.connect(self.__change_input)
+
+        self.passwords_from_txt_button = QPushButton("Извлечь пароли из файла", self)
+        self.boxHorizontal_input.addWidget(self.passwords_from_txt_button)
+        self.passwords_from_txt_button.clicked.connect(self.__open_file)
 
         encrypt_button = QPushButton("Зашифровать", self)
         self.boxVertical_main.addWidget(encrypt_button)
         encrypt_button.clicked.connect(self.__encrypt)
 
-    def open_file(self):
+    def __change_input(self):
+        self.plus_box.setEnabled(True)
+        self.minus_box.setEnabled(True)
+        for row in range(self.boxGrid.rowCount()):
+            for column in range(self.boxGrid.columnCount()):
+                if column % 2 == 1:
+                    try:
+                        self.boxGrid.itemAtPosition(row, column).widget().setEnabled(True)
+                    except AttributeError:
+                        pass
+
+    def __open_file(self):
         file_pathname, _ = QFileDialog.getOpenFileName()
+
+        self.plus_box.setEnabled(False)
+        self.minus_box.setEnabled(False)
+        for row in range(self.boxGrid.rowCount()):
+            for column in range(self.boxGrid.columnCount()):
+                if column % 2 == 1:
+                    try:
+                        self.boxGrid.itemAtPosition(row, column).widget().setEnabled(False)
+                    except AttributeError:
+                        pass
+
         with open(file_pathname, 'r') as f:
             string = f.read()
         passwords = string.split('\n')
@@ -74,26 +102,6 @@ class EncryptDialog(QDialog):
                 passwords.remove(el)
         self.data = passwords
         print(self.data)
-        print(len(self.data))
-        if len(self.data) > 10:
-            for i in range(len(self.data)):
-                if i == 9:
-                    self.showMessageBox("Внимание", "Все пароли из файла прочитаны, "
-                                                    "но на экран будут выведены только 10 из них", "info")
-                    break
-                self.__plus()
-        else:
-            for i in range(len(self.data)-1):
-                self.__plus()
-        num = 0
-        for row in range(self.boxGrid.rowCount()):
-            for column in range(self.boxGrid.columnCount()):
-                if column % 2 == 1:
-                    try:
-                        self.boxGrid.itemAtPosition(row, column).widget().setText(self.data[num])
-                        num = num + 1
-                    except AttributeError:
-                        pass
 
     def __change_mod(self, state):
         if state == 2:
@@ -117,28 +125,28 @@ class EncryptDialog(QDialog):
                         except AttributeError:
                             pass
 
-    def __change_pswd_line(self):
-        if self.current_pswd_amount > self.previous_pswd_amount:
-            position = self.current_pswd_amount - 1
+    def __change_password_line(self):
+        if self.current_password_amount > self.previous_password_amount:
+            position = self.current_password_amount - 1
 
             if position % 2 == 0:
-                pswd_label = QLabel("Пароль №" + str(self.current_pswd_amount), self)
-                self.boxGrid.addWidget(pswd_label, position // 2, 0)
+                password_label = QLabel("Пароль №" + str(self.current_password_amount), self)
+                self.boxGrid.addWidget(password_label, position // 2, 0)
 
-                pswd_line = QLineEdit(self)
-                pswd_line.setEchoMode(self.state)
-                pswd_line.setCursorPosition(1)
-                self.boxGrid.addWidget(pswd_line, position // 2, 1)
+                password_line = QLineEdit(self)
+                password_line.setEchoMode(self.state)
+                password_line.setCursorPosition(1)
+                self.boxGrid.addWidget(password_line, position // 2, 1)
             else:
-                pswd_label = QLabel("Пароль №" + str(self.current_pswd_amount), self)
-                self.boxGrid.addWidget(pswd_label, position // 2, 2)
+                password_label = QLabel("Пароль №" + str(self.current_password_amount), self)
+                self.boxGrid.addWidget(password_label, position // 2, 2)
 
-                pswd_line = QLineEdit(self)
-                pswd_line.setEchoMode(self.state)
-                pswd_line.setCursorPosition(1)
-                self.boxGrid.addWidget(pswd_line, position // 2, 3)
+                password_line = QLineEdit(self)
+                password_line.setEchoMode(self.state)
+                password_line.setCursorPosition(1)
+                self.boxGrid.addWidget(password_line, position // 2, 3)
         else:
-            position = 2 * self.current_pswd_amount
+            position = 2 * self.current_password_amount
             self.boxGrid.takeAt(position).widget().setParent(None)
             self.boxGrid.takeAt(position).widget().setParent(None)
 
@@ -155,22 +163,22 @@ class EncryptDialog(QDialog):
                         pass
 
     def __plus(self):
-        if self.current_pswd_amount == 10:
+        if self.current_password_amount == 10:
             self.showMessageBox("Внимание!", "Для записи более 10 паролей используйте текстовый файл", "info")
         else:
-            self.previous_pswd_amount = self.current_pswd_amount
-            self.current_pswd_amount = self.current_pswd_amount + 1
-            self.pswd_amount.setText(str(self.current_pswd_amount))
-            self.__change_pswd_line()
+            self.previous_password_amount = self.current_password_amount
+            self.current_password_amount = self.current_password_amount + 1
+            self.password_amount.setText(str(self.current_password_amount))
+            self.__change_password_line()
 
     def __minus(self):
-        if self.current_pswd_amount == 1:
+        if self.current_password_amount == 1:
             self.showMessageBox("Ошибка!", "Минимальное количество паролей - 1", "error")
         else:
-            self.previous_pswd_amount = self.current_pswd_amount
-            self.current_pswd_amount = self.current_pswd_amount - 1
-            self.pswd_amount.setText(str(self.current_pswd_amount))
-            self.__change_pswd_line()
+            self.previous_password_amount = self.current_password_amount
+            self.current_password_amount = self.current_password_amount - 1
+            self.password_amount.setText(str(self.current_password_amount))
+            self.__change_password_line()
 
     def __get_algorithm(self):
         self.algorithm.insertItem(0, "--Выберите алгоритм--")
