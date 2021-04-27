@@ -2,7 +2,8 @@
 
 import header_pb2
 from hashpw import hashpw
-from utils import xor_bytes
+import utils
+import ciphers
 
 
 class Header:
@@ -57,45 +58,71 @@ class Header:
         self._header.ParseFromString(header_bin)
 
 
-    def add_user(self, privkey, passwd=None):
+    def add_user(self, symmetric_key, password=None, public_key_file=None):
         """Adds to the header a user who can decrypt the file.
 
-        :param passwd: password (in case of symmetric-key encryption)
-        :type: str
-
-        :param privkey: the key of symmetric-key encryption
+        :param symmetric_key: the key of symmetric-key encryption
         :type: bytes
+
+        :param password: password (in case of symmetric-key encryption)
+        :type: str|NoneType
+
+        :param public_key_file: file with public key (in case of hybrid encryption)
+        :type public_key_file: str|NoneType
         """
 
+        if utils.is_symmetric(self.algorithm) and password is None:
+            raise ValueError('Algorithm is symmetric, but password is None')
+        if not utils.is_symmetric(self.algorithm) and public_key_file is None:
+            raise ValueError('Algorithm is hybrid, but public key file is None')
+
         user = self._header.users.add() # pylint: disable=no-member
-        if passwd is not None:
+        if utils.is_symmetric(self.algorithm):
             salt = hashpw.gensalt()
-            user.salt = salt
-            _hash = hashpw(passwd, salt)
+            _hash = hashpw(password, salt)
             passwd_hash = _hash.pw_hash()
-            double_passwd_hash = _hash.double_pw_hash()
-            user.uid = double_passwd_hash
-            if len(passwd_hash) < len(privkey):
+            if len(passwd_hash) < len(symmetric_key):
                 raise ValueError('Too little hash')
-            user.enkey = xor_bytes(passwd_hash, privkey)
+            double_passwd_hash = _hash.double_pw_hash()
+            user.salt = salt
+            user.uid = double_passwd_hash
+            user.enkey = utils.xor_bytes(passwd_hash, symmetric_key)
+        else:
+            public_cipher = ciphers.public_cipher(self.algorithm)
+            public_key = public_cipher.import_key(public_key_file)
+            user.uid = public_key.export_key('DER')
+            user.enkey = public_cipher.encrypt(public_key, symmetric_key)
 
 
-    def key(self, passwd=None):
+    def key(self, password=None, private_key_file=None):
         """Checks if the password matches one of the users.
 
-        :param passwd: password to check
-        :type passwd: str
+        :param password: password to check (in case of symmetric-key encryption)
+        :type password: str|Nonetype
+
+        :param private_key_file: file with private key (in case of hybrid encryption)
+        :type private_key_file: str|NoneType
 
         :rtype: bytes|NoneType
         :return: the key if the user was found, otherwise None
         """
 
+        if utils.is_symmetric(self.algorithm) and password is None:
+            raise ValueError('Algorithm is symmetric, but password is None')
+        if not utils.is_symmetric(self.algorithm) and private_key_file is None:
+            raise ValueError('Algorithm is hybrid, but private key file is None')
+
         for user in self._header.users: # pylint: disable=no-member
-            if passwd is not None:
-                _hash = hashpw(passwd, user.salt)
+            if utils.is_symmetric(self.algorithm):
+                _hash = hashpw(password, user.salt)
                 passwd_hash = _hash.pw_hash()
                 if _hash.pw_check(user.uid):
-                    return xor_bytes(passwd_hash, user.enkey)
+                    return utils.xor_bytes(passwd_hash, user.enkey)
+            else:
+                public_cipher = ciphers.public_cipher(self.algorithm)
+                private_key = public_cipher.import_key(private_key_file)
+                if private_key.public_key().export_key('DER') == user.uid:
+                    return public_cipher.decrypt(private_key, user.enkey)
 
         return None
 

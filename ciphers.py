@@ -9,39 +9,56 @@ from des import DES
 from magma import Magma
 from kuznechik import Kuznechik
 
+from rsa import RSA
 
-def cipher(algorithm):
-    """Selects a chiper.
+
+def symmetric_cipher(algorithm):
+    """Selects a symmetric-key chiper.
+
+    :param algorithm: algorithm of encryption or decryption data
+    :type algorithm: int|str
+
+    :return: an object of one of the symmetric-key encryption classes or None
+    """
+
+    algorithm = utils.algorithm_name(algorithm)
+
+    _cipher = None
+    if algorithm == utils.AlgEnum.CAESAR.name:
+        _cipher = Caesar()
+    if algorithm == utils.AlgEnum.VIGENERE.name:
+        _cipher = Vigenere()
+    if algorithm == utils.AlgEnum.AES.name:
+        _cipher = AES()
+    if algorithm == utils.AlgEnum.DES.name:
+        _cipher = DES()
+    if algorithm == utils.AlgEnum.MAGMA.name:
+        _cipher = Magma()
+    if algorithm == utils.AlgEnum.KUZNECHIK.name:
+        _cipher = Kuznechik()
+
+    if algorithm == utils.AlgEnum.RSA.name:
+        _cipher = Kuznechik()
+
+    return _cipher
+
+
+def public_cipher(algorithm):
+    """Selects a public-key chiper.
 
     :param algorithm: algorithm of encryption or decryption
     :type algorithm: int|str
 
-    :return: an object of one of the encryption classes or None
+    :return: an object of one of the public-key encryption classes or None
     """
 
-    if isinstance(algorithm, str):
-        algorithm = algorithm.upper()
-    elif isinstance(algorithm, int):
-        for alg in utils.AlgEnum:
-            if alg.value == algorithm:
-                algorithm = alg.name
-    else:
-        raise TypeError
+    algorithm = utils.algorithm_name(algorithm)
 
-    __cipher = None
-    if algorithm == utils.AlgEnum.CAESAR.name:
-        __cipher = Caesar()
-    if algorithm == utils.AlgEnum.VIGENERE.name:
-        __cipher = Vigenere()
-    if algorithm == utils.AlgEnum.AES.name:
-        __cipher = AES()
-    if algorithm == utils.AlgEnum.DES.name:
-        __cipher = DES()
-    if algorithm == utils.AlgEnum.MAGMA.name:
-        __cipher = Magma()
-    if algorithm == utils.AlgEnum.KUZNECHIK.name:
-        __cipher = Kuznechik()
+    if utils.is_symmetric(algorithm):
+        raise ValueError('Algorithm is symmetric-key')
 
-    if __cipher is not None:
-        return __cipher
-    return None
+    _cipher = None
+    if algorithm == utils.AlgEnum.RSA.name:
+        _cipher = RSA()
+
+    return _cipher
