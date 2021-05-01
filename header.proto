@@ -8,13 +8,15 @@ syntax = "proto2";
 package mipt_is_proj;
 
 message User {
-    optional bytes salt = 1;
-    optional bytes uid = 2;
-    optional bytes enkey = 3;
+    optional bytes key_salt = 1;
+    optional bytes pw_salt = 2;
+    optional bytes uid = 3;
+    optional bytes enkey = 4;
 }
 
 message Header {
     optional int64 algorithm = 1;
-    optional int64 data_length = 2;
-    repeated User users = 3;
+    optional int64 hash_function = 2;
+    optional int64 data_length = 3;
+    repeated User users = 4;
 }

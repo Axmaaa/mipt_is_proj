@@ -11,22 +11,22 @@ class Magma():
     """Class contains Magma algorithm."""
 
     def __init__(self):
-        # Number of the algorithm
-        self.algorithm_number = utils.AlgEnum.MAGMA.value
-        # Size of initialization vector in bytes
-        self.iv_size = gost3412.GOST3412Magma.blocksize
         # Size of key in bytes
         self.key_size = gost3412.KEYSIZE
+        # Size of initialization vector in bytes
+        self.iv_size = gost3412.GOST3412Magma.blocksize
+        # Size of key data in bytes
+        self.key_data_size = self.key_size + self.iv_size
         # Size of the data block read to encrypt
         self.data_block_size = gost3412.GOST3412Magma.blocksize
 
     def keygen(self):
         """Generates a random key."""
 
-        return secrets.token_bytes(self.key_size + self.iv_size)
+        return secrets.token_bytes(self.key_data_size)
 
 
-    def encrypt(self, ifstream, ofstream, key):
+    def encrypt(self, ifstream, ofstream, key_data):
         """Encrypts data using Magma algorithm in CBC mode.
 
         :param ifstream: binary input stream
@@ -35,13 +35,14 @@ class Magma():
         :param ofstream: binary output stream
         :type ofstream: BufferedWriter
 
-        :param key: key for the algorithm
-        :type key: bytes
+        :param key_data: concatenation of key and initializaton vector for the algorithm
+        :type key_data: bytes
         """
 
-        magma = gost3412.GOST3412Magma(key[:self.key_size])
+        key = key_data[:self.key_size]
+        init_vector = key_data[self.key_size:]
 
-        init_vector = key[self.key_size:]
+        magma = gost3412.GOST3412Magma(key)
         tmp_data = init_vector
 
         data_in = ifstream.read(self.data_block_size)
@@ -55,7 +56,7 @@ class Magma():
             data_in = ifstream.read(self.data_block_size)
 
 
-    def decrypt(self, ifstream, ofstream, key, data_size):
+    def decrypt(self, ifstream, ofstream, key_data, data_size):
         """Decrypts data using Magma algorithm in CBC mode.
 
         :param ifstream: binary input stream
@@ -64,16 +65,17 @@ class Magma():
         :param ofstream: binary output stream
         :type ofstream: BufferedWriter
 
-        :param key: key for the algorithm
-        :type key: bytes
+        :param key_data: concatenation of key and initializaton vector for the algorithm
+        :type key_data: bytes
 
         :param data_size: size of the payload
         :type data_size: int
         """
 
-        magma = gost3412.GOST3412Magma(key[:self.key_size])
+        key = key_data[:self.key_size]
+        init_vector = key_data[self.key_size:]
 
-        init_vector = key[self.key_size:]
+        magma = gost3412.GOST3412Magma(key)
         tmp_data = init_vector
 
         data_in = ifstream.read(self.data_block_size)

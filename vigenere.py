@@ -2,24 +2,22 @@
 
 import secrets
 
-import utils
-
 
 class Vigenere():
     """Class contains vigenere algorithm."""
 
     def __init__(self):
-        # Number of the algorithm
-        self.algorithm_number = utils.AlgEnum.VIGENERE.value
         # Size of key in bytes
         self.key_size = 10
+        # Size of key data in bytes
+        self.key_data_size = self.key_size
         # Size of the data block read to encrypt
-        self.data_block_size = self.key_size
+        self.data_block_size = self.key_data_size
 
     def keygen(self):
         """Generates a random key."""
 
-        return secrets.token_bytes(self.key_size)
+        return secrets.token_bytes(self.key_data_size)
 
 
     @staticmethod

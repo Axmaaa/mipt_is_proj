@@ -1,9 +1,10 @@
 """Module for working with header of encrypted file."""
 
 import header_pb2
-from hashpw import hashpw
+import hashpw
+import kdf
 import utils
-import ciphers
+from algorithm import Algorithm
 
 
 class Header:
@@ -13,8 +14,6 @@ class Header:
         self._header = header_pb2.Header()
         # Length of the size of header in bytes
         self.header_size_len = 8
-        # Size of the salt in bytes
-        self.salt_size = 16
 
 
     @property
@@ -27,6 +26,18 @@ class Header:
     @algorithm.setter
     def algorithm(self, algorithm):
         self._header.algorithm = algorithm
+
+
+    @property
+    def hash_function(self):
+        """Function to hash password."""
+
+        return self._header.hash_function # pylint: disable=no-member
+
+
+    @hash_function.setter
+    def hash_function(self, hash_function):
+        self._header.hash_function = hash_function
 
 
     @property
@@ -58,71 +69,79 @@ class Header:
         self._header.ParseFromString(header_bin)
 
 
-    def add_user(self, symmetric_key, password=None, public_key_file=None):
+    def add_user(self, symmkey, password=None, pubkey_file=None):
         """Adds to the header a user who can decrypt the file.
 
-        :param symmetric_key: the key of symmetric-key encryption
-        :type: bytes
+        :param symmkey: key for symmetric key algorithm
+        :type symmkey: bytes
 
         :param password: password (in case of symmetric-key encryption)
-        :type: str|NoneType
+        :type: bytes|NoneType
 
-        :param public_key_file: file with public key (in case of hybrid encryption)
-        :type public_key_file: str|NoneType
+        :param pubkey_file: file with public key (in case of hybrid encryption)
+        :type pubkey_file: str|NoneType
         """
 
-        if utils.is_symmetric(self.algorithm) and password is None:
+        algorithm = Algorithm(self.algorithm)
+
+        if algorithm.is_symmetric() and password is None:
             raise ValueError('Algorithm is symmetric, but password is None')
-        if not utils.is_symmetric(self.algorithm) and public_key_file is None:
+        if not algorithm.is_symmetric() and pubkey_file is None:
             raise ValueError('Algorithm is hybrid, but public key file is None')
 
         user = self._header.users.add() # pylint: disable=no-member
-        if utils.is_symmetric(self.algorithm):
-            salt = hashpw.gensalt()
-            _hash = hashpw(password, salt)
-            passwd_hash = _hash.pw_hash()
-            if len(passwd_hash) < len(symmetric_key):
-                raise ValueError('Too little hash')
-            double_passwd_hash = _hash.double_pw_hash()
-            user.salt = salt
-            user.uid = double_passwd_hash
-            user.enkey = utils.xor_bytes(passwd_hash, symmetric_key)
+        if algorithm.is_symmetric():
+            user.key_salt = kdf.gensalt()
+            key_pw_hash = kdf.kdf(password, user.key_salt, algorithm.key_data_size)
+
+            hashf = hashpw.enc_hash().hpw_class
+            _hash = hashf(password)
+            user.pw_salt = _hash.salt
+            user.uid = _hash.hash()
+
+            user.enkey = utils.xor_bytes(key_pw_hash, symmkey)
         else:
-            public_cipher = ciphers.public_cipher(self.algorithm)
-            public_key = public_cipher.import_key(public_key_file)
+            public_cipher = algorithm.public_cipher()
+            public_key = public_cipher.import_key(pubkey_file)
+            padded_symmkey = utils.pad(symmkey, public_cipher.max_data_size)
+
             user.uid = public_key.export_key('DER')
-            user.enkey = public_cipher.encrypt(public_key, symmetric_key)
+            user.enkey = public_cipher.encrypt(public_key, padded_symmkey)
 
 
-    def key(self, password=None, private_key_file=None):
+    def key(self, password=None, privkey_file=None):
         """Checks if the password matches one of the users.
 
         :param password: password to check (in case of symmetric-key encryption)
         :type password: str|Nonetype
 
-        :param private_key_file: file with private key (in case of hybrid encryption)
-        :type private_key_file: str|NoneType
+        :param privkey_file: file with private key (in case of hybrid encryption)
+        :type privkey_file: str|NoneType
 
         :rtype: bytes|NoneType
         :return: the key if the user was found, otherwise None
         """
 
-        if utils.is_symmetric(self.algorithm) and password is None:
+        algorithm = Algorithm(self.algorithm)
+
+        if algorithm.is_symmetric() and password is None:
             raise ValueError('Algorithm is symmetric, but password is None')
-        if not utils.is_symmetric(self.algorithm) and private_key_file is None:
+        if not algorithm.is_symmetric() and privkey_file is None:
             raise ValueError('Algorithm is hybrid, but private key file is None')
 
         for user in self._header.users: # pylint: disable=no-member
-            if utils.is_symmetric(self.algorithm):
-                _hash = hashpw(password, user.salt)
-                passwd_hash = _hash.pw_hash()
-                if _hash.pw_check(user.uid):
-                    return utils.xor_bytes(passwd_hash, user.enkey)
+            if algorithm.is_symmetric():
+                hashf = hashpw.HashFunc(self.hash_function).hpw_class
+                _hash = hashf(password, user.pw_salt)
+                if _hash.check(user.uid):
+                    key_pw_hash = kdf.kdf(password, user.key_salt, algorithm.key_data_size)
+                    return utils.xor_bytes(user.enkey, key_pw_hash)
             else:
-                public_cipher = ciphers.public_cipher(self.algorithm)
-                private_key = public_cipher.import_key(private_key_file)
+                public_cipher = algorithm.public_cipher()
+                private_key = public_cipher.import_key(privkey_file)
                 if private_key.public_key().export_key('DER') == user.uid:
-                    return public_cipher.decrypt(private_key, user.enkey)
+                    padded_symmkey = public_cipher.decrypt(private_key, user.enkey)
+                    return utils.unpad(padded_symmkey, algorithm.key_data_size)
 
         return None
 

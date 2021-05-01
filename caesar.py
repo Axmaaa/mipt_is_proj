@@ -2,24 +2,22 @@
 
 import secrets
 
-import utils
-
 
 class Caesar():
     """Class contains caesar algorithm."""
 
     def __init__(self):
-        # Number of the algorithm
-        self.algorithm_number = utils.AlgEnum.CAESAR.value
         # Size of key in bytes
         self.key_size = 1
+        # Size of key data in bytes
+        self.key_data_size = self.key_size
         # Size of the data block read to encrypt
         self.data_block_size = 1024
 
     def keygen(self):
         """Generates a random key."""
 
-        return secrets.token_bytes(self.key_size)
+        return secrets.token_bytes(self.key_data_size)
 
 
     @staticmethod

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cheader.proto\x12\x0cmipt_is_proj\"0\n\x04User\x12\x0c\n\x04salt\x18\x01 \x01(\x0c\x12\x0b\n\x03uid\x18\x02 \x01(\x0c\x12\r\n\x05\x65nkey\x18\x03 \x01(\x0c\"S\n\x06Header\x12\x11\n\talgorithm\x18\x01 \x01(\x03\x12\x13\n\x0b\x64\x61ta_length\x18\x02 \x01(\x03\x12!\n\x05users\x18\x03 \x03(\x0b\x32\x12.mipt_is_proj.User'
+  serialized_pb=b'\n\x0cheader.proto\x12\x0cmipt_is_proj\"E\n\x04User\x12\x10\n\x08key_salt\x18\x01 \x01(\x0c\x12\x0f\n\x07pw_salt\x18\x02 \x01(\x0c\x12\x0b\n\x03uid\x18\x03 \x01(\x0c\x12\r\n\x05\x65nkey\x18\x04 \x01(\x0c\"j\n\x06Header\x12\x11\n\talgorithm\x18\x01 \x01(\x03\x12\x15\n\rhash_function\x18\x02 \x01(\x03\x12\x13\n\x0b\x64\x61ta_length\x18\x03 \x01(\x03\x12!\n\x05users\x18\x04 \x03(\x0b\x32\x12.mipt_is_proj.User'
 )
 
 
@@ -34,22 +34,29 @@ _USER = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='salt', full_name='mipt_is_proj.User.salt', index=0,
+      name='key_salt', full_name='mipt_is_proj.User.key_salt', index=0,
       number=1, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='uid', full_name='mipt_is_proj.User.uid', index=1,
+      name='pw_salt', full_name='mipt_is_proj.User.pw_salt', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='enkey', full_name='mipt_is_proj.User.enkey', index=2,
+      name='uid', full_name='mipt_is_proj.User.uid', index=2,
       number=3, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='enkey', full_name='mipt_is_proj.User.enkey', index=3,
+      number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -67,7 +74,7 @@ _USER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=30,
-  serialized_end=78,
+  serialized_end=99,
 )
 
 
@@ -87,15 +94,22 @@ _HEADER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='data_length', full_name='mipt_is_proj.Header.data_length', index=1,
+      name='hash_function', full_name='mipt_is_proj.Header.hash_function', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='users', full_name='mipt_is_proj.Header.users', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      name='data_length', full_name='mipt_is_proj.Header.data_length', index=2,
+      number=3, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='users', full_name='mipt_is_proj.Header.users', index=3,
+      number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -112,8 +126,8 @@ _HEADER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=80,
-  serialized_end=163,
+  serialized_start=101,
+  serialized_end=207,
 )
 
 _HEADER.fields_by_name['users'].message_type = _USER

@@ -3,17 +3,15 @@
 import Crypto.PublicKey.RSA as _RSA
 from Crypto.Cipher import PKCS1_OAEP
 
-import utils
-
 
 class RSA():
     """Class contains RSA algorithm."""
 
     def __init__(self):
-        # Number of the algorithm
-        self.algorithm_number = utils.AlgEnum.RSA.value
         # Size of key in bytes
         self.key_size = 512
+        # Maximum data size in bytes
+        self.max_data_size = 214
 
 
     def keygen(self):
