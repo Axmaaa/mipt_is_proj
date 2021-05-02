@@ -94,8 +94,8 @@ class Header:
             user.key_salt = kdf.gensalt()
             key_pw_hash = kdf.kdf(password, user.key_salt, algorithm.key_data_size)
 
-            hashf = hashpw.enc_hash().hpw_class
-            _hash = hashf(password)
+            hashf_cls = hashpw.HashFunc(self.hash_function).cls
+            _hash = hashf_cls(password)
             user.pw_salt = _hash.salt
             user.uid = _hash.hash()
 
@@ -131,8 +131,8 @@ class Header:
 
         for user in self._header.users: # pylint: disable=no-member
             if algorithm.is_symmetric():
-                hashf = hashpw.HashFunc(self.hash_function).hpw_class
-                _hash = hashf(password, user.pw_salt)
+                hashf_cls = hashpw.HashFunc(self.hash_function).cls
+                _hash = hashf_cls(password, user.pw_salt)
                 if _hash.check(user.uid):
                     key_pw_hash = kdf.kdf(password, user.key_salt, algorithm.key_data_size)
                     return utils.xor_bytes(user.enkey, key_pw_hash)

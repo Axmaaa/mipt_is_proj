@@ -35,8 +35,7 @@ def encrypt_file(input_file, output_file, algorithm, passwords=None, pubkey_file
 
     hdr = header.Header()
     hdr.algorithm = algorithm.number
-    hashf = hashpw.enc_hash()
-    hdr.hash_function = hashf.number
+    hdr.hash_function = hashpw.ENC_HASH_FUNCTION.number
     hdr.data_length = os.path.getsize(input_file)
 
     symm_cipher = algorithm.symmetric_cipher()

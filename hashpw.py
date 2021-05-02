@@ -54,7 +54,7 @@ class HashFunc():
 
 
     @property
-    def hpw_class(self):
+    def cls(self):
         """Selects a hash function class.
 
         :param password: password for hash function
@@ -151,10 +151,4 @@ class Bcrypt(HashPw):
         return bcrypt.checkpw(self.password, pw_hash)
 
 
-def enc_hash():
-    """Returns class of last implemented hash function."""
-
-    for _hash in HashEnum:
-        hashf = HashFunc(_hash.name)
-
-    return hashf
+ENC_HASH_FUNCTION = HashFunc('Bcrypt')
