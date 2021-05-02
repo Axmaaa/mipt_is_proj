@@ -60,6 +60,10 @@ def decrypt_file(input_file, output_file, password=None, privkey_file=None):
     hdr = header.Header()
     with open(input_file, 'rb') as ifstream:
         hdr.read(ifstream)
+        try:
+            hashpw.HashFunc(hdr.hash_function)
+        except ValueError:
+            raise ValueError('Unknown hash function in header')
         algorithm = Algorithm(hdr.algorithm)
         data_length = hdr.data_length
         symm_cipher = algorithm.symmetric_cipher()

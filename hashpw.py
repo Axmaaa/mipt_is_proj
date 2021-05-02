@@ -3,7 +3,7 @@
 import enum
 import secrets
 
-from hashlib import sha512
+import hashlib
 from pygost import gost34112012512 as streebog
 import bcrypt
 
@@ -13,7 +13,10 @@ PW_SALT_SIZE = 16
 class HashEnum(enum.Enum):
     """Class contains the numbers of the hash functions."""
 
-    SHA512 = 1
+    SHA2256NOSALT = 1
+    SHA2256 = enum.auto()
+    SHA2512 = enum.auto()
+    SHA3512 = enum.auto()
     STREEBOG = enum.auto()
     BCRYPT = enum.auto()
 
@@ -28,7 +31,7 @@ class HashFunc():
         """
         if isinstance(hash_function, str):
             hash_function = hash_function.upper()
-            if hash_function not in [hashf.name for hashf in HashEnum]:
+            if hash_function.upper() not in [hashf.name for hashf in HashEnum]:
                 raise ValueError('Invalid hash function name')
             self.hash_function = hash_function
         elif isinstance(hash_function, int):
@@ -67,8 +70,14 @@ class HashFunc():
         """
 
         _hash = None
-        if self.hash_function == HashEnum.SHA512.name:
-            _hash = SHA512
+        if self.hash_function == HashEnum.SHA2256NOSALT.name:
+            _hash = SHA2256NoSalt
+        if self.hash_function == HashEnum.SHA2256.name:
+            _hash = SHA2256
+        if self.hash_function == HashEnum.SHA2512.name:
+            _hash = SHA2512
+        if self.hash_function == HashEnum.SHA3512.name:
+            _hash = SHA3512
         if self.hash_function == HashEnum.STREEBOG.name:
             _hash = Streebog
         if self.hash_function == HashEnum.BCRYPT.name:
@@ -83,10 +92,9 @@ class HashPw():
 
     def __init__(self, password, salt=b''):
         self.password = password
-        if salt == b'':
+        self.salt = salt
+        if self.salt == b'':
             self.salt = self.gensalt()
-        else:
-            self.salt = salt
 
 
     @classmethod
@@ -106,20 +114,43 @@ class HashPw():
     def check(self, pw_hash):
         """Checks if hash(salty_passwd) equals to pw_hash."""
 
-        pass
+        return self.hash() == pw_hash
 
 
-class SHA512(HashPw):
-    """SHA-512 hash."""
+class SHA2256NoSalt(HashPw):
+    """SHA2-256 hash without salt."""
 
     def hash(self):
-        _hash = sha512()
+        _hash = hashlib.sha256()
+        _hash.update(self.password)
+        return _hash.digest()
+
+
+class SHA2256(HashPw):
+    """SHA2-256 hash."""
+
+    def hash(self):
+        _hash = hashlib.sha256()
         _hash.update(self.password + self.salt)
         return _hash.digest()
 
 
-    def check(self, pw_hash):
-        return self.hash() == pw_hash
+class SHA2512(HashPw):
+    """SHA2-512 hash."""
+
+    def hash(self):
+        _hash = hashlib.sha512()
+        _hash.update(self.password + self.salt)
+        return _hash.digest()
+
+
+class SHA3512(HashPw):
+    """SHA3-512 hash."""
+
+    def hash(self):
+        _hash = hashlib.sha3_512() # pylint: disable=no-member
+        _hash.update(self.password + self.salt)
+        return _hash.digest()
 
 
 class Streebog(HashPw):
@@ -129,10 +160,6 @@ class Streebog(HashPw):
         _hash = streebog.new()
         _hash.update(self.password + self.salt)
         return _hash.digest()
-
-
-    def check(self, pw_hash):
-        return self.hash() == pw_hash
 
 
 class Bcrypt(HashPw):
