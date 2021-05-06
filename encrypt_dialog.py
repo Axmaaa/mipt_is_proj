@@ -77,12 +77,14 @@ class EncryptDialog(QDialog):
             self.passwords.setText("Количество ключей")
             self.passwords_by_hands_button.setEnabled(False)
             self.passwords_from_txt_button.setEnabled(False)
+            self.multy_pass.setEnabled(False)
             self.__change_input_type()
         else:
             if self.previous_algorithm_index == 7:
                 self.passwords.setText("Количество паролей")
                 self.passwords_by_hands_button.setEnabled(True)
                 self.passwords_from_txt_button.setEnabled(True)
+                self.multy_pass.setEnabled(True)
                 self.__change_input_type()
 
         self.previous_algorithm_index = self.algorithm.currentIndex()
@@ -120,7 +122,6 @@ class EncryptDialog(QDialog):
                     self.boxGrid.addWidget(key_line, position // 2, 3)
                 temp_pos = temp_pos + 1
         else:
-            print("add_passwords")
             temp_pos = 0
             for i in range(self.current_password_amount):
                 position = temp_pos
