@@ -17,9 +17,9 @@ from api import decrypt_file
 # Необходимо подумать о пересмотрении способа поддрежки множества паролей в encrypt_dialog.py
 
 
-class DBFormWindow(QMainWindow):
-    def __init__(self, user_id, parent=None):
-        QMainWindow.__init__(self, parent)
+class DBFormWindow(QDialog):
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
         self.path_to_open = ''
         self.path_to_save = ''
         self.file_open_name = 'Выберите исходный файл'
@@ -39,53 +39,63 @@ class DBFormWindow(QMainWindow):
         self.select_file_to_save_label.setText("Конечный файл: " + self.file_save_name)
 
     def __init_ui(self):
-        self.setFixedSize(QSize(640, 480))
-        wrapper = partial(center, self)
-        QtCore.QTimer.singleShot(0, wrapper)
+        self.setMinimumSize(QSize(680, 100))
+        self.middle = center
+        self.wrapper = partial(center, self)
+        QtCore.QTimer.singleShot(0, self.wrapper)
         self.setWindowTitle("Крипто Завр 719")
 
-        self.LayoutWidget1 = QtWidgets.QWidget(self)
-        self.LayoutWidget1.setGeometry(QtCore.QRect(10, 10, 620, 30))
-        self.Layout1 = QtWidgets.QHBoxLayout(self.LayoutWidget1)
-        self.Layout1.setContentsMargins(0, 0, 0, 0)
-
-        self.LayoutWidget2 = QtWidgets.QWidget(self)
-        self.LayoutWidget2.setGeometry(QtCore.QRect(10, 10, 620, 100))
-        self.Layout2 = QtWidgets.QHBoxLayout(self.LayoutWidget2)
-        self.Layout2.setContentsMargins(0, 0, 0, 0)
-
-        self.LayoutWidget3 = QtWidgets.QWidget(self)
-        self.LayoutWidget3.setGeometry(QtCore.QRect(10, 10, 620, 170))
-        self.Layout3 = QtWidgets.QHBoxLayout(self.LayoutWidget3)
-        self.Layout3.setContentsMargins(0, 0, 0, 0)
-
-        select_file_button = QPushButton("Открыть ...", self)
-        self.Layout3.addWidget(select_file_button)
+        self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общий
+        self.buttons_layout = QtWidgets.QHBoxLayout()  # Кнопки
 
         self.select_file_label = QLabel(self.file_open_name)
         self.select_file_label.setAlignment(Qt.AlignCenter)
-        self.Layout1.addWidget(self.select_file_label)
-
-        select_file_to_save_button = QPushButton("Сохранить в ...", self)
-        self.Layout3.addWidget(select_file_to_save_button)
+        self.boxVertical_main.addWidget(self.select_file_label)
 
         self.select_file_to_save_label = QLabel(self.file_save_name)
         self.select_file_to_save_label.setAlignment(Qt.AlignCenter)
-        self.Layout2.addWidget(self.select_file_to_save_label)
+        self.boxVertical_main.addWidget(self.select_file_to_save_label)
+
+        select_file_button = QPushButton("Открыть ...", self)
+        self.buttons_layout.addWidget(select_file_button)
+
+        select_file_to_save_button = QPushButton("Сохранить в ...", self)
+        self.buttons_layout.addWidget(select_file_to_save_button)
 
         encrypt_button = QPushButton("Зашифровать", self)
-        self.Layout3.addWidget(encrypt_button)
+        self.buttons_layout.addWidget(encrypt_button)
 
         decrypt_button = QPushButton("Дешифровать", self)
-        self.Layout3.addWidget(decrypt_button)
+        self.buttons_layout.addWidget(decrypt_button)
+
+        self.vision_text_button = QPushButton("Показать содержимое файла", self)
+        self.buttons_layout.addWidget(self.vision_text_button)
+
+        self.boxVertical_main.addLayout(self.buttons_layout)
+        self.setLayout(self.boxVertical_main)
 
         self.list = QTextBrowser(self)
-        self.list.setGeometry(QtCore.QRect(10, 110, 620, 270))
+        #self.list.setGeometry(QtCore.QRect(10, 110, 620, 270))
+        self.list.setVisible(False)
+        self.boxVertical_main.addWidget(self.list)
 
         select_file_to_save_button.clicked.connect(self.__select_file_to_save)
         select_file_button.clicked.connect(self.__select_file)
         decrypt_button.clicked.connect(self.__decrypt)
         encrypt_button.clicked.connect(self.__encrypt)
+        self.vision_text_button.clicked.connect(self.__change_vision_text)
+
+    def __change_vision_text(self):
+        if self.list.isVisible() == 1:
+            self.list.setVisible(False)
+            self.vision_text_button.setText("Показать содержимое файла")
+            QtCore.QTimer.singleShot(0, self.wrapper)
+            self.setFixedSize(QSize(680, 100))
+        else:
+            self.list.setVisible(True)
+            self.vision_text_button.setText("Скрыть содержимое файла")
+            QtCore.QTimer.singleShot(0, self.wrapper)
+            self.setFixedSize(QSize(680, 480))
 
     def __select_file_to_save(self):
         file_pathname, _ = QFileDialog.getOpenFileName()
@@ -334,7 +344,7 @@ class DBFormWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    w = DBFormWindow('0')
+    w = DBFormWindow()
     w.show()
     # ex = Dialog()
     sys.exit(app.exec_())
