@@ -323,6 +323,8 @@ class DBFormWindow(QDialog):
             return "magma"
         elif algorithm == "Кузнечик":
             return "kuznechik"
+        elif algorithm == "RSA":
+            return "rsa"
 
     @staticmethod
     def showMessageBox(title, message, case):
