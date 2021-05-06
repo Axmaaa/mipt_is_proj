@@ -196,10 +196,10 @@ class DBFormWindow(QDialog):
             return 1
         if mode == "password":
             password = dial.key
-            privkey_files = None
+            privkey_file = None
         else:
             password = None
-            privkey_files = dial.key
+            privkey_file = dial.key
 
         if res == 0:
             print("Password from dialog ", password)
@@ -220,12 +220,18 @@ class DBFormWindow(QDialog):
                 if res == 1:
                     return 1
 
-        try:
+        print("parametrs to decrypt_file: "
+              "path_to_open = " + self.path_to_open + " | path_to_save = "
+              + self.path_to_save + " | password = " + str(password) + " | privkey_file = "
+              + str(privkey_file))
+        decrypt_file(self.path_to_open, self.path_to_save, password, privkey_file)
+
+        """try:
             print("parametrs to decrypt_file: "
                   "path_to_open = " + self.path_to_open + " | path_to_save = "
-                  + self.path_to_save + " | password = " + str(password) + " | privkey_files = "
-                  + str(privkey_files))
-            decrypt_file(self.path_to_open, self.path_to_save, password, privkey_files)
+                  + self.path_to_save + " | password = " + str(password) + " | privkey_file = "
+                  + str(privkey_file))
+            decrypt_file(self.path_to_open, self.path_to_save, password, privkey_file)
         except Exception as er:
             if er == "Invalid password":
                 self.showMessageBox("Ошибка", "Неверный пароль",
@@ -235,7 +241,7 @@ class DBFormWindow(QDialog):
                                     "(" + str(er) + ") при дешировке файла! Ищите виноватых!",
                                     'error')
             print(er)
-            return
+            return"""
         print("--Конец выполнения дешифрования---")
         self.__open_file(self.path_to_save, "read")
         self.showMessageBox("Успех", "Файл успешно дешифрован", 'info')

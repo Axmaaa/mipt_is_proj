@@ -347,6 +347,18 @@ class EncryptDialog(QDialog):
         if self.algorithm.currentIndex() == 0:
             self.showMessageBox("Ошибка", "Алгоритм не был выбран", "error")
             return
+        if self.algorithm.currentIndex() == 7:
+            for row in range(self.boxGrid.rowCount()):
+                for column in range(self.boxGrid.columnCount()):
+                    if column % 2 == 1:
+                        try:
+                            if self.boxGrid.itemAtPosition(row, column).widget().text() == "Выбрать ключ":
+                                self.showMessageBox("Ошибка",
+                                                    self.boxGrid.itemAtPosition(row, column - 1).widget().text() +
+                                                    " не был ввыден", "error")
+                                return
+                        except AttributeError:
+                            pass
         self.state = 1
         if self.algorithm.currentIndex() != 7:
             self.box_grid_data()
