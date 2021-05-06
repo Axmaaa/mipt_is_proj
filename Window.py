@@ -170,19 +170,27 @@ class DBFormWindow(QDialog):
 
     def __decrypt_dialog_show(self):
 
-        hdr = header.Header()
-        with open(self.path_to_open, 'rb') as ifstream:
-            hdr.read(ifstream)
-            try:
-                hashpw.HashFunc(hdr.hash_function)
-            except ValueError:
-                raise ValueError('Unknown hash function in header')
-            algorithm = Algorithm(hdr.algorithm)
-            if algorithm.is_symmetric() == 1:
-                mode = "password"
-            else:
-                mode = "key"
-
+        try:
+            hdr = header.Header()
+            with open(self.path_to_open, 'rb') as ifstream:
+                hdr.read(ifstream)
+                try:
+                    hashpw.HashFunc(hdr.hash_function)
+                except ValueError:
+                    raise ValueError('Unknown hash function in header')
+                algorithm = Algorithm(hdr.algorithm)
+                if algorithm.is_symmetric() == 1:
+                    mode = "password"
+                else:
+                    mode = "key"
+        except ValueError:
+            self.showMessageBox("Ошибка", "Неверный формат файла",
+                                'error')
+            return
+        except MemoryError:
+            self.showMessageBox("Ошибка", "Неверный формат файла",
+                                'error')
+            return
         dial = DecryptDialog(mode)
         res = dial.exec_()
         if dial.state == 0:
