@@ -92,11 +92,12 @@ class DBFormWindow(QDialog):
             self.vision_text_button.setText("Показать содержимое файла")
             QtCore.QTimer.singleShot(0, self.wrapper)
             self.setFixedSize(QSize(680, 100))
+            self.setMinimumSize(QSize(680, 100))
         else:
             self.list.setVisible(True)
             self.vision_text_button.setText("Скрыть содержимое файла")
             QtCore.QTimer.singleShot(0, self.wrapper)
-            self.setFixedSize(QSize(680, 480))
+            self.setMinimumSize(QSize(680, 480))
 
     def __select_file_to_save(self):
         file_pathname, _ = QFileDialog.getOpenFileName()
