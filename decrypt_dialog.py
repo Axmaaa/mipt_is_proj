@@ -46,7 +46,7 @@ class DecryptDialog(QDialog):
         self.setMinimumSize(QSize(330, 120))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
-        self.setWindowTitle("Дешифрование")  # Устанавл заголовок окна
+        self.setWindowTitle("Расшифрование")  # Устанавливаем заголовок окна
 
         self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общее
         self.keys_layout = QtWidgets.QHBoxLayout()  # Ключи
@@ -63,7 +63,7 @@ class DecryptDialog(QDialog):
         self.boxVertical_main.addWidget(key_from_file_button)
         key_from_file_button.clicked.connect(self.__open_file_with_key)
 
-        decrypt_button = QPushButton("Дешифровать", self)
+        decrypt_button = QPushButton("Расшифровать", self)
         self.boxVertical_main.addWidget(decrypt_button)
         decrypt_button.clicked.connect(self.__decrypt)
 

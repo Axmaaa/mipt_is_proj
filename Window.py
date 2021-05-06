@@ -66,7 +66,7 @@ class DBFormWindow(QDialog):
         encrypt_button = QPushButton("Зашифровать", self)
         self.buttons_layout.addWidget(encrypt_button)
 
-        decrypt_button = QPushButton("Дешифровать", self)
+        decrypt_button = QPushButton("Расшифровать", self)
         self.buttons_layout.addWidget(decrypt_button)
 
         self.vision_text_button = QPushButton("Показать содержимое файла", self)
@@ -76,7 +76,6 @@ class DBFormWindow(QDialog):
         self.setLayout(self.boxVertical_main)
 
         self.list = QTextBrowser(self)
-        #self.list.setGeometry(QtCore.QRect(10, 110, 620, 270))
         self.list.setVisible(False)
         self.boxVertical_main.addWidget(self.list)
 
@@ -220,13 +219,7 @@ class DBFormWindow(QDialog):
                 if res == 1:
                     return 1
 
-        print("parametrs to decrypt_file: "
-              "path_to_open = " + self.path_to_open + " | path_to_save = "
-              + self.path_to_save + " | password = " + str(password) + " | privkey_file = "
-              + str(privkey_file))
-        decrypt_file(self.path_to_open, self.path_to_save, password, privkey_file)
-
-        """try:
+        try:
             print("parametrs to decrypt_file: "
                   "path_to_open = " + self.path_to_open + " | path_to_save = "
                   + self.path_to_save + " | password = " + str(password) + " | privkey_file = "
@@ -241,7 +234,7 @@ class DBFormWindow(QDialog):
                                     "(" + str(er) + ") при дешировке файла! Ищите виноватых!",
                                     'error')
             print(er)
-            return"""
+            return
         print("--Конец выполнения дешифрования---")
         self.__open_file(self.path_to_save, "read")
         self.showMessageBox("Успех", "Файл успешно дешифрован", 'info')
