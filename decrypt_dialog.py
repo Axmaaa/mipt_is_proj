@@ -74,8 +74,10 @@ class DecryptDialog(QDialog):
             return
         path_to_key = file_pathname
         with open(file_pathname, 'r') as f:
-            self.key = f.read()
+            key = f.read()
+            print("Ключ: " + key)
             print("Файл " + file_pathname + " открыт на чтение")
+        self.key = file_pathname
         temp = path_to_key.split("/")
         key_file_name = temp[len(temp)-1]
         self.key_label.setText(key_file_name)

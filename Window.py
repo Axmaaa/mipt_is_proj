@@ -223,7 +223,7 @@ class DBFormWindow(QDialog):
         try:
             print("parametrs to decrypt_file: "
                   "path_to_open = " + self.path_to_open + " | path_to_save = "
-                  + self.path_to_save + " | password = " + str(password) + " | pubkey_files = "
+                  + self.path_to_save + " | password = " + str(password) + " | privkey_files = "
                   + str(privkey_files))
             decrypt_file(self.path_to_open, self.path_to_save, password, privkey_files)
         except Exception as er:
