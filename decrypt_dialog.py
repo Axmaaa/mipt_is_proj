@@ -7,44 +7,88 @@ from center import center
 
 
 class DecryptDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, mode, parent=None):
         QDialog.__init__(self, parent)
-
+        self.key = ""
+        self.mode = mode
         self.state = 0
+        if self.mode == "password":
+            self.__init_passwords_ui()
+        elif self.mode == "key":
+            self.__init_keys_ui()
+        else:
+            print("Неизвестный способ дешифрования")
+            self.showMessageBox("Ошибка", "Неизвестный способ дешифрования", "error")
 
-        self.__init_ui()
-
-    def __init_ui(self):
-        self.setFixedSize(QSize(270, 120))  # Устанавливаем размеры
+    def __init_passwords_ui(self):
+        self.setMinimumSize(QSize(330, 120))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
         self.setWindowTitle("Дешифрование")  # Устанавл заголовок окна
 
-        self.LayoutWidget1 = QtWidgets.QWidget(self)
-        self.LayoutWidget1.setGeometry(QtCore.QRect(10, 10, 250, 30))
-        self.Layout1 = QtWidgets.QHBoxLayout(self.LayoutWidget1)
-        self.Layout1.setContentsMargins(0, 0, 0, 0)
+        self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общее
+        self.passwords_layout = QtWidgets.QHBoxLayout()  # Пароль
+        self.boxVertical_main.addLayout(self.passwords_layout)
+        self.setLayout(self.boxVertical_main)
 
-        self.LayoutWidget2 = QtWidgets.QWidget(self)
-        self.LayoutWidget2.setGeometry(QtCore.QRect(10, 10, 250, 100))
-        self.Layout2 = QtWidgets.QHBoxLayout(self.LayoutWidget2)
-        self.Layout2.setContentsMargins(0, 0, 0, 0)
+        password_label = QLabel("Пароль:", self)
+        self.passwords_layout.addWidget(password_label)
 
-        pswd_label = QLabel("Пароль:", self)
-        self.Layout1.addWidget(pswd_label)
-
-        self.pswd_line = QLineEdit(self)
-        self.Layout1.addWidget(self.pswd_line)
-        self.pswd_line.setEchoMode(2)
+        self.password_line = QLineEdit(self)
+        self.passwords_layout.addWidget(self.password_line)
+        self.password_line.setEchoMode(2)
 
         decrypt_button = QPushButton("Дешифровать", self)
-        self.Layout2.addWidget(decrypt_button)
+        self.boxVertical_main.addWidget(decrypt_button)
         decrypt_button.clicked.connect(self.__decrypt)
 
+    def __init_keys_ui(self):
+        self.setMinimumSize(QSize(330, 120))  # Устанавливаем размеры
+        wrapper = partial(center, self)
+        QtCore.QTimer.singleShot(0, wrapper)
+        self.setWindowTitle("Дешифрование")  # Устанавл заголовок окна
+
+        self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общее
+        self.keys_layout = QtWidgets.QHBoxLayout()  # Ключи
+        self.boxVertical_main.addLayout(self.keys_layout)
+        self.setLayout(self.boxVertical_main)
+
+        key_label = QLabel("Файл с ключом:", self)
+        self.keys_layout.addWidget(key_label)
+
+        self.key_label = QLabel("Выберете файл с ключом", self)
+        self.keys_layout.addWidget(self.key_label)
+
+        key_from_file_button = QPushButton("Выбрать ключ из файла", self)
+        self.boxVertical_main.addWidget(key_from_file_button)
+        key_from_file_button.clicked.connect(self.__open_file_with_key)
+
+        decrypt_button = QPushButton("Дешифровать", self)
+        self.boxVertical_main.addWidget(decrypt_button)
+        decrypt_button.clicked.connect(self.__decrypt)
+
+    def __open_file_with_key(self):
+        file_pathname, _ = QFileDialog.getOpenFileName()
+        if file_pathname == '':
+            self.showMessageBox("Внимание", "Файл с ключом не был выбран", "info")
+            return
+        path_to_key = file_pathname
+        with open(file_pathname, 'r') as f:
+            self.key = f.read()
+            print("Файл " + file_pathname + " открыт на чтение")
+        temp = path_to_key.split("/")
+        key_file_name = temp[len(temp)-1]
+        self.key_label.setText(key_file_name)
+
     def __decrypt(self):
-        if self.pswd_line.text() == "":
-            self.showMessageBox("Ошибка", "Пароль не был ввыден", "error")
-            self.pswd_line.setFocus()
+        if self.mode == "password":
+            self.key = self.password_line.text()
+            if self.password_line.text() == "":
+                self.showMessageBox("Ошибка", "Пароль не был ввыден", "error")
+                self.password_line.setFocus()
+                return
+        elif self.key_label.text() in ("", "Выберете файл с ключом", None):
+            self.showMessageBox("Ошибка", "Ключ не был введен", "error")
             return
         self.state = 1
         self.close()
@@ -72,6 +116,6 @@ class DecryptDialog(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    w = DecryptDialog()
+    w = DecryptDialog(mode="key")
     w.show()
     sys.exit(app.exec_())

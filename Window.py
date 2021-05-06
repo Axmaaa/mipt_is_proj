@@ -1,6 +1,9 @@
 import datetime
 import os
 import sys
+import header
+import hashpw
+
 from functools import partial
 from PyQt5.Qt import *
 from PyQt5 import QtCore, QtWidgets
@@ -12,9 +15,7 @@ from encrypt_dialog import EncryptDialog
 from center import center
 from api import encrypt_file
 from api import decrypt_file
-
-
-# Необходимо подумать о пересмотрении способа поддрежки множества паролей в encrypt_dialog.py
+from algorithm import Algorithm
 
 
 class DBFormWindow(QDialog):
@@ -169,11 +170,24 @@ class DBFormWindow(QDialog):
 
     def __decrypt_dialog_show(self):
 
-        dial = DecryptDialog()
+        hdr = header.Header()
+        with open(self.path_to_open, 'rb') as ifstream:
+            hdr.read(ifstream)
+            try:
+                hashpw.HashFunc(hdr.hash_function)
+            except ValueError:
+                raise ValueError('Unknown hash function in header')
+            algorithm = Algorithm(hdr.algorithm)
+            if algorithm.is_symmetric() == 1:
+                mode = "password"
+            else:
+                mode = "key"
+
+        dial = DecryptDialog(mode)
         res = dial.exec_()
         if dial.state == 0:
             return 1
-        password = dial.pswd_line.text()
+        password = dial.key
 
         if res == 0:
             print("Password from dialog ", password)
@@ -200,9 +214,13 @@ class DBFormWindow(QDialog):
                   + self.path_to_save + " | password = " + password)
             decrypt_file(self.path_to_open, self.path_to_save, password)
         except Exception as er:
-            self.showMessageBox("Ошибка", "Произошла ошибка "
-                                "(" + str(er) + ") при дешировке файла! Ищите виноватых!",
-                                'error')
+            if er == "Invalid password":
+                self.showMessageBox("Ошибка", "Неверный пароль",
+                                    'error')
+            else:
+                self.showMessageBox("Ошибка", "Произошла ошибка "
+                                    "(" + str(er) + ") при дешировке файла! Ищите виноватых!",
+                                    'error')
             print(er)
             return
         print("--Конец выполнения дешифрования---")
