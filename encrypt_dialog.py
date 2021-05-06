@@ -186,7 +186,7 @@ class EncryptDialog(QDialog):
             key = f.read()
             print("Файл " + file_pathname + " открыт на чтение")
             print("data: " + key)
-            self.data.append(key)
+        self.data.append(file_pathname)
         temp = path_to_key.split("/")
         key_file_name = temp[len(temp)-1]
         button.setText(key_file_name)

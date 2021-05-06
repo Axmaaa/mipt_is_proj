@@ -40,7 +40,7 @@ class DBFormWindow(QDialog):
         self.select_file_to_save_label.setText("Конечный файл: " + self.file_save_name)
 
     def __init_ui(self):
-        self.setMinimumSize(QSize(680, 100))
+        self.setMinimumSize(QSize(700, 100))
         self.middle = center
         self.wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, self.wrapper)
@@ -91,13 +91,13 @@ class DBFormWindow(QDialog):
             self.list.setVisible(False)
             self.vision_text_button.setText("Показать содержимое файла")
             QtCore.QTimer.singleShot(0, self.wrapper)
-            self.setFixedSize(QSize(680, 100))
-            self.setMinimumSize(QSize(680, 100))
+            self.setFixedSize(QSize(700, 100))
+            self.setMinimumSize(QSize(700, 100))
         else:
             self.list.setVisible(True)
             self.vision_text_button.setText("Скрыть содержимое файла")
             QtCore.QTimer.singleShot(0, self.wrapper)
-            self.setMinimumSize(QSize(680, 480))
+            self.setMinimumSize(QSize(700, 480))
 
     def __select_file_to_save(self):
         file_pathname, _ = QFileDialog.getOpenFileName()
@@ -184,19 +184,22 @@ class DBFormWindow(QDialog):
                     mode = "password"
                 else:
                     mode = "key"
-        except ValueError:
+        except Exception as error:
             self.showMessageBox("Ошибка", "Неверный формат файла",
                                 'error')
+            print(error)
             return
-        except MemoryError:
-            self.showMessageBox("Ошибка", "Неверный формат файла",
-                                'error')
-            return
+
         dial = DecryptDialog(mode)
         res = dial.exec_()
         if dial.state == 0:
             return 1
-        password = dial.key
+        if mode == "password":
+            password = dial.key
+            privkey_files = None
+        else:
+            password = None
+            privkey_files = dial.key
 
         if res == 0:
             print("Password from dialog ", password)
@@ -220,8 +223,9 @@ class DBFormWindow(QDialog):
         try:
             print("parametrs to decrypt_file: "
                   "path_to_open = " + self.path_to_open + " | path_to_save = "
-                  + self.path_to_save + " | password = " + password)
-            decrypt_file(self.path_to_open, self.path_to_save, password)
+                  + self.path_to_save + " | password = " + str(password) + " | pubkey_files = "
+                  + str(privkey_files))
+            decrypt_file(self.path_to_open, self.path_to_save, password, privkey_files)
         except Exception as er:
             if er == "Invalid password":
                 self.showMessageBox("Ошибка", "Неверный пароль",
@@ -251,12 +255,18 @@ class DBFormWindow(QDialog):
         if dial.state == 0:
             return 1
 
-        passwords = dial.data
         algorithm = self.__translate_algorithm(dial.algorithm.currentText())
+        if algorithm != "rsa":
+            passwords = dial.data
+            pubkey_files = None
+        else:
+            passwords = None
+            pubkey_files = dial.data
 
         if res == 0:
             print("Passwords from dialog ", passwords)
             print("Algorithm from dialog ", algorithm)
+            print("pubkey_files from dialog ", pubkey_files)
 
         if self.file_save_name in ('', 'Выберите конечный файл '
                                    'или сгенерируйте его в процессе работы', None):
@@ -279,8 +289,9 @@ class DBFormWindow(QDialog):
             print("parametrs to decrypt_file: "
                   "path_to_open = " + self.path_to_open + " | path_to_save = "
                   + self.path_to_save + " |  "
-                  "password(s) = " + str(passwords) + " | algorithm = " + algorithm)
-            encrypt_file(self.path_to_open, self.path_to_save, algorithm, passwords)
+                  "algorithm= " + algorithm + " | password(s) = " + str(passwords)
+                  + " | pubkey_files = " + str(pubkey_files))
+            encrypt_file(self.path_to_open, self.path_to_save, algorithm, passwords, pubkey_files)
         except Exception as er:
             self.showMessageBox("Ошибка", "Произошла ошибка (" + str(er) + ") "
                                 "при шифровании файла! Ищите виноватых!",
