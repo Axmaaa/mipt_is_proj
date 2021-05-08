@@ -61,6 +61,7 @@ class EncryptDialog(QDialog):
         self.boxVertical_main.addWidget(self.multy_pass)
 
         self.passwords_by_hands_button = QPushButton("Ввести пароли вручную", self)
+        self.passwords_by_hands_button.setEnabled(False)
         self.boxHorizontal_input.addWidget(self.passwords_by_hands_button)
         self.passwords_by_hands_button.clicked.connect(self.__change_input)
 
@@ -75,15 +76,15 @@ class EncryptDialog(QDialog):
     def __asymmetric(self):
         if self.algorithm.currentIndex() == 7:
             self.passwords.setText("Количество ключей")
-            self.passwords_by_hands_button.setEnabled(False)
-            self.passwords_from_txt_button.setEnabled(False)
+            self.passwords_by_hands_button.setText("Ввести ключи вручную")
+            self.passwords_from_txt_button.setText("Извлечь ключи из файла")
             self.multy_pass.setEnabled(False)
             self.__change_input_type()
         else:
             if self.previous_algorithm_index == 7:
                 self.passwords.setText("Количество паролей")
-                self.passwords_by_hands_button.setEnabled(True)
-                self.passwords_from_txt_button.setEnabled(True)
+                self.passwords_by_hands_button.setText("Ввести пароли вручную")
+                self.passwords_from_txt_button.setText("Извлечь ключи из файла")
                 self.multy_pass.setEnabled(True)
                 self.__change_input_type()
 
@@ -192,6 +193,7 @@ class EncryptDialog(QDialog):
         button.setText(key_file_name)
 
     def __change_input(self):
+        self.passwords_by_hands_button.setEnabled(False)
         self.plus_box.setEnabled(True)
         self.minus_box.setEnabled(True)
         for row in range(self.boxGrid.rowCount()):
@@ -203,6 +205,7 @@ class EncryptDialog(QDialog):
                         pass
 
     def __open_file(self):
+        self.passwords_by_hands_button.setEnabled(True)
         file_pathname, _ = QFileDialog.getOpenFileName()
 
         self.plus_box.setEnabled(False)
@@ -214,9 +217,12 @@ class EncryptDialog(QDialog):
                         self.boxGrid.itemAtPosition(row, column).widget().setEnabled(False)
                     except AttributeError:
                         pass
-
-        with open(file_pathname, 'r') as f:
-            string = f.read()
+        try:
+            with open(file_pathname, 'r') as f:
+                string = f.read()
+        except FileNotFoundError:
+            self.showMessageBox("Внимание", "Файл не был выбран", "info")
+            return
         passwords = string.split('\n')
         for el in passwords:
             if el == '':
@@ -332,36 +338,44 @@ class EncryptDialog(QDialog):
         self.algorithm.setCurrentIndex(0)
 
     def __encrypt(self):
-        for row in range(self.boxGrid.rowCount()):
-            for column in range(self.boxGrid.columnCount()):
-                if column % 2 == 1:
-                    try:
-                        if self.boxGrid.itemAtPosition(row, column).widget().text() == "":
-                            print(self.boxGrid.itemAtPosition(row, column).widget().text())
-                            self.showMessageBox("Ошибка",
-                                                self.boxGrid.itemAtPosition(row, column - 1).widget().text() +
-                                                " не был ввыден", "error")
-                            return
-                    except AttributeError:
-                        pass
-        if self.algorithm.currentIndex() == 0:
-            self.showMessageBox("Ошибка", "Алгоритм не был выбран", "error")
-            return
-        if self.algorithm.currentIndex() == 7:
+        if self.passwords_by_hands_button.isEnabled() == 0:
             for row in range(self.boxGrid.rowCount()):
                 for column in range(self.boxGrid.columnCount()):
                     if column % 2 == 1:
                         try:
-                            if self.boxGrid.itemAtPosition(row, column).widget().text() == "Выбрать ключ":
+                            if self.boxGrid.itemAtPosition(row, column).widget().text() == "":
+                                print(self.boxGrid.itemAtPosition(row, column).widget().text())
                                 self.showMessageBox("Ошибка",
                                                     self.boxGrid.itemAtPosition(row, column - 1).widget().text() +
                                                     " не был ввыден", "error")
                                 return
                         except AttributeError:
                             pass
-        self.state = 1
-        if self.algorithm.currentIndex() != 7:
-            self.box_grid_data()
+            if self.algorithm.currentIndex() == 0:
+                self.showMessageBox("Ошибка", "Алгоритм не был выбран", "error")
+                return
+            if self.algorithm.currentIndex() == 7:
+                for row in range(self.boxGrid.rowCount()):
+                    for column in range(self.boxGrid.columnCount()):
+                        if column % 2 == 1:
+                            try:
+                                if self.boxGrid.itemAtPosition(row, column).widget().text() == "Выбрать ключ":
+                                    self.showMessageBox("Ошибка",
+                                                        self.boxGrid.itemAtPosition(row, column - 1).widget().text() +
+                                                        " не был ввыден", "error")
+                                    return
+                            except AttributeError:
+                                pass
+            self.state = 1
+            if self.algorithm.currentIndex() != 7:
+                self.box_grid_data()
+        elif len(self.data) == 0:
+            if self.algorithm.currentIndex() == 7:
+                self.showMessageBox("Ошибка", "Ключ не был введен", "error")
+                return
+            else:
+                self.showMessageBox("Ошибка", "Пароль не был введен", "error")
+                return
         print("list of keys or passwords = " + str(self.data))
         self.close()
 
