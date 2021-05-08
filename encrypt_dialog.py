@@ -196,6 +196,7 @@ class EncryptDialog(QDialog):
         self.passwords_by_hands_button.setEnabled(False)
         self.plus_box.setEnabled(True)
         self.minus_box.setEnabled(True)
+        self.data.clear()
         for row in range(self.boxGrid.rowCount()):
             for column in range(self.boxGrid.columnCount()):
                 if column % 2 == 1:
@@ -222,6 +223,7 @@ class EncryptDialog(QDialog):
                 string = f.read()
         except FileNotFoundError:
             self.showMessageBox("Внимание", "Файл не был выбран", "info")
+            self.__change_input()
             return
         passwords = string.split('\n')
         for el in passwords:
