@@ -13,7 +13,7 @@ def encrypt_file(input_file, output_file, algorithm, passwords=None, pubkey_file
     :param input_file: file with plain text
     :type input_file: str
 
-    :param output_file: file for encryptes text
+    :param output_file: file for encrypted text
     :type output_file: str
 
     :param algorithm: algorithm used to encrypt
@@ -55,7 +55,20 @@ def encrypt_file(input_file, output_file, algorithm, passwords=None, pubkey_file
 
 
 def decrypt_file(input_file, output_file, password=None, privkey_file=None):
-    """Decrypts input file."""
+    """Decrypts input file.
+
+    :param input_file: file with encrypted text
+    :type input_file: str
+
+    :param output_file: file for decrypted text
+    :type output_file: str
+
+    :param password: password to decrypt the file
+    :type password: str
+
+    :param privkey_file: file with ptivate key to encrypt the symmetric key
+    :type privkey_file: str
+    """
 
     hdr = header.Header()
     with open(input_file, 'rb') as ifstream:
