@@ -2,14 +2,14 @@
 
 import enum
 
-from caesar import Caesar
-from vigenere import Vigenere
-from aes import AES
-from des import DES
-from magma import Magma
-from kuznechik import Kuznechik
+import caesar
+import vigenere
+import aes
+import des
+import magma
+import kuznechik
 
-from rsa import RSA
+import rsa
 
 
 class AlgEnum(enum.Enum):
@@ -74,20 +74,20 @@ class Algorithm():
 
         _cipher = None
         if self.algorithm == AlgEnum.CAESAR.name:
-            _cipher = Caesar()
+            _cipher = caesar.Caesar()
         if self.algorithm == AlgEnum.VIGENERE.name:
-            _cipher = Vigenere()
+            _cipher = vigenere.Vigenere()
         if self.algorithm == AlgEnum.AES.name:
-            _cipher = AES()
+            _cipher = aes.AES()
         if self.algorithm == AlgEnum.DES.name:
-            _cipher = DES()
+            _cipher = des.DES()
         if self.algorithm == AlgEnum.MAGMA.name:
-            _cipher = Magma()
+            _cipher = magma.Magma()
         if self.algorithm == AlgEnum.KUZNECHIK.name:
-            _cipher = Kuznechik()
+            _cipher = kuznechik.Kuznechik()
 
         if self.algorithm == AlgEnum.RSA.name:
-            _cipher = Kuznechik()
+            _cipher = kuznechik.Kuznechik()
 
         return _cipher
 
@@ -103,6 +103,6 @@ class Algorithm():
 
         _cipher = None
         if self.algorithm == AlgEnum.RSA.name:
-            _cipher = RSA()
+            _cipher = rsa.RSA()
 
         return _cipher
