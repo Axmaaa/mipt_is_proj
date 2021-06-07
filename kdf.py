@@ -1,7 +1,7 @@
 """Module for generating key from password."""
 
 import secrets
-from hashlib import pbkdf2_hmac
+from hashlib import scrypt
 
 
 KEY_SALT_SIZE = 16
@@ -17,4 +17,5 @@ def gensalt():
 def kdf(password, key_salt, key_size):
     """Generates key based on password and salt."""
 
-    return pbkdf2_hmac('sha256', password, key_salt, 100000, dklen=key_size)
+    return scrypt(password, salt=key_salt, n=2**14, r=8, p=1, dklen=key_size)
+    # return pbkdf2_hmac('sha256', password, key_salt, 100000, dklen=key_size)

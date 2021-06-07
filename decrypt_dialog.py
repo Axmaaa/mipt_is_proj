@@ -17,14 +17,14 @@ class DecryptDialog(QDialog):
         elif self.mode == "key":
             self.__init_keys_ui()
         else:
-            print("Неизвестный способ дешифрования")
-            self.showMessageBox("Ошибка", "Неизвестный способ дешифрования", "error")
+            print("Неизвестный способ расшифрования")
+            self.showMessageBox("Ошибка", "Неизвестный способ расшифрования", "error")
 
     def __init_passwords_ui(self):
         self.setMinimumSize(QSize(330, 120))  # Устанавливаем размеры
         wrapper = partial(center, self)
         QtCore.QTimer.singleShot(0, wrapper)
-        self.setWindowTitle("Дешифрование")  # Устанавл заголовок окна
+        self.setWindowTitle("Расшифрование")  # Устанавл заголовок окна
 
         self.boxVertical_main = QtWidgets.QVBoxLayout()  # Общее
         self.passwords_layout = QtWidgets.QHBoxLayout()  # Пароль
@@ -38,7 +38,7 @@ class DecryptDialog(QDialog):
         self.passwords_layout.addWidget(self.password_line)
         self.password_line.setEchoMode(2)
 
-        decrypt_button = QPushButton("Дешифровать", self)
+        decrypt_button = QPushButton("Расшифровать", self)
         self.boxVertical_main.addWidget(decrypt_button)
         decrypt_button.clicked.connect(self.__decrypt)
 
